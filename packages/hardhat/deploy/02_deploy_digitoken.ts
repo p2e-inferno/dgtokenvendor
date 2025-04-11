@@ -1,6 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-// import { Contract } from "ethers";
 
 /**
  * Deploys a contract named "DGToken" using the deployer account and
@@ -8,6 +7,9 @@ import { DeployFunction } from "hardhat-deploy/types";
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
+export const ownerAddress = "0x23C93C4dD75b55944a58DF4cb345D0C9C6Ab5C4B"; // frontend address -- CHANGE BEFORE LIVE DEPLOYMENT
+export const devAddress = "0x23C93C4dD75b55944a58DF4cb345D0C9C6Ab5C4B"; // frontend address -- CHANGE BEFORE LIVE DEPLOYMENT
+
 const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
@@ -22,8 +24,8 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
   const initialSupply = 160000000;
-  const ownerAddress = "0x65bA0624403Fc5Ca2b20479e9F626eD4D78E0aD9"; // Unlock DAO on base
-  const devAddress = "0xca7632327567796e51920f6b16373e92c7823854"; // Danny Thomx
+  // const ownerAddress = "0xB34567C4cA697b39F72e1a8478f285329A98ed1b"; // Unlock DAO treasury (timelock) on base
+  // const devAddress = "0xca7632327567796e51920f6b16373e92c7823854"; // Dev address -- CHANGE BEFORE LIVE DEPLOYMENT
 
   await deploy("DGToken", {
     from: deployer,

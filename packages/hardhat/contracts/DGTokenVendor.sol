@@ -1,92 +1,77 @@
-pragma solidity 0.8.20; //Do not change the solidity version as it negatively impacts submission grading
 // SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+import "./interfaces/IDGTokenVendor.sol";
 
-// Custom error definitions
-error ExceedsMaxWhitelistedCollections();
+// Custom errors
+error AppChangeCooldownStillActive();
 error CollectionAddressNotFound();
 error CollectionAlreadyAdded();
-error NoValidKeyForUserFound();
-error TokenTransferFailed();
-error RateLockStillActive();
-error FeeLockStillActive();
-error InsufficientAllowance();
+error DailySellLimitExceeded();
+error ExceedsMaxWhitelistedCollections();
 error ETHTransferFailed();
+error FeeCooldownActive();
+error InsufficientPointsForUpgrade();
+error InsufficientFuelForUpgrade();
 error InvalidFeeBPS();
 error InvalidDevAddress();
-error AppChangeCooldownStillActive();
+error InvalidExchangeRate();
+error InsufficientBalance();
+error InvalidParameter();
+error InvalidFuelRate();
+error InvalidPointsAwarded();
+error InvalidDailyLimitMultiplier();
+error InvalidBurnAmount();
+error InvalidUpgradePointsThreshold();
+error InvalidUpgradeFuelThreshold();
+error InvalidQualifyingBuyThreshold();
+error InvalidCooldown();
+error LightUpFailed();
+error MinimumAmountNotMet();
+error MaxStageReached();
+error NoValidKeyForUserFound();
+error RateCooldownActive();
+error TokenTransferFailed();
+error StageSellLimitExceeded();
+error StageCooldownActive();
 error UnauthorizedCaller();
+error WhitelistedCollectionsAlreadyInitialized();
 
 interface IPublicLock {
     function getHasValidKey(address _user) external view returns (bool);
 
     function tokenOfOwnerByIndex(address _user, uint256 _index) external view returns (uint256);
 }
+ 
+contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
+    using SafeERC20 for IERC20;
 
-contract DGTokenVendor is Ownable, ReentrancyGuard {
-    // Constants
+    // Core Constants
     uint256 public constant MAX_WHITELISTED_COLLECTIONS = 10;
-    uint256 public constant BASIS_POINTS = 10000; // 100% = 10000 basis points
-    uint256 public constant MAX_FEE_BPS = 1000; // Maximum fee of 10% (1000 basis points)
-    uint256 public constant RATE_CHANGE_COOLDOWN = 90 days;
-    uint256 public constant APP_CHANGE_COOLDOWN = 100 days;
-    address public DEV_ADDRESS;
-    uint64 public constant VERSION = 1;
-    string public constant NAME = "DGTokenVendorV1";
+    uint256 public constant BASIS_POINTS = 10000;
+    uint256 public constant MAX_DAILY_MULTIPLIER = 100;
+    uint256 public constant MAX_FUEL_LIMIT = 100;
+    uint256 public constant MAX_FUEL_RATE = 5;
+    uint256 public constant MAX_POINTS_AWARDED = 5;
+    uint256 public constant MAX_SELL_BPS_LIMIT = 7000;
+    address public constant BURN_ADDRESS = 0x2Ef7DeC913e4127Fd0f94B32eeAd23ee63143598;
 
-    // Token addresses
-    IERC20 public baseToken;
-    IERC20 public swapToken;
-
-    uint256 public lastDevAddressChangeTimestamp;
-
-    // Exchange rate (how many swap tokens per base token)
-    uint256 public exchangeRate;
-    uint256 public lastRateChangeTimestamp;
-
-    // Fee settings
-    uint256 public buyFeeBPS; // Buy fee in basis points
-    uint256 public sellFeeBPS; // Sell fee in basis points
-    uint256 public lastFeeChangeTimestamp;
-
-    // Array of whitelisted NFT collection addresses
+    // State Variables
+    StageConstants stageConstants;
+    FeeConfig feeConfig;
+    TokenConfig tokenConfig;
+    SystemState systemState;
     address[] private whitelistedCollections;
 
-    // Fee tracking
-    uint256 public baseTokenFees;
-    uint256 public swapTokenFees;
-
-    // Events
-    event TokensPurchased(address indexed buyer, uint256 baseTokenAmount, uint256 swapTokenAmount, uint256 fee);
-    event TokensSold(address indexed seller, uint256 swapTokenAmount, uint256 baseTokenAmount, uint256 fee);
-    event WhitelistedCollectionAdded(address indexed collectionAddress);
-    event WhitelistedCollectionRemoved(address indexed collectionAddress);
-    event ExchangeRateUpdated(uint256 newRate);
-    event FeesWithdrawn(address indexed to, uint256 baseTokenFees, uint256 swapTokenFees);
-    event ETHWithdrawn(address indexed to, uint256 amount);
-    event FeeRatesUpdated(uint256 newBuyFeeBPS, uint256 newSellFeeBPS);
-
-    constructor(
-        address _baseToken,
-        address _swapToken,
-        uint256 _initialExchangeRate,
-        address _devAddress
-    ) Ownable(msg.sender) {
-        // Initialize Dapp state
-        baseToken = IERC20(_baseToken);
-        swapToken = IERC20(_swapToken);
-        exchangeRate = _initialExchangeRate;
-        lastRateChangeTimestamp = block.timestamp;
-        buyFeeBPS = 100; // 1% initial buy fee
-        sellFeeBPS = 200; // 2% initial sell fee
-        lastFeeChangeTimestamp = block.timestamp;
-        DEV_ADDRESS = _devAddress;
-        lastDevAddressChangeTimestamp = block.timestamp;
-    }
+    mapping(address => UserState) userStates;
+    mapping(UserStage => StageConfig) stageConfig;
 
     modifier onlyNFTHolder() {
         if (!hasValidKey(msg.sender)) revert NoValidKeyForUserFound();
@@ -94,131 +79,233 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
     }
 
     modifier onlyAuthorized() {
-        if (!(msg.sender == owner() || msg.sender == DEV_ADDRESS)) revert UnauthorizedCaller();
+        if (!(msg.sender == owner() || msg.sender == systemState.devAddress)) revert UnauthorizedCaller();
         _;
     }
 
-    /**
-     * @dev Buy swap tokens using base tokens
-     * @param amount Amount of base tokens to spend
-     */
-    function buyTokens(uint256 amount) external nonReentrant onlyNFTHolder {
-        // Calculate fee using current buyFeeBPS
-        uint256 fee = (amount * buyFeeBPS) / BASIS_POINTS;
-        uint256 tokenToBuyAmountAfterFee = amount - fee;
-        // Calculate swap tokens to receive
-        uint256 tokenToBuyAmount = tokenToBuyAmountAfterFee * exchangeRate;
+    constructor(
+        address _baseToken,
+        address _swapToken,
+        uint256 _initialExchangeRate,
+        address _devAddress
+    ) Ownable(msg.sender) {
+        if (_initialExchangeRate == 0) revert InvalidExchangeRate();
 
-        // Update fee tracking
-        baseTokenFees += fee;
+        // Initialize token config
+        tokenConfig = TokenConfig({
+            baseToken: IERC20(_baseToken),
+            swapToken: IERC20(_swapToken),
+            exchangeRate: _initialExchangeRate
+        });
 
-        // Transfer base tokens from user to contract
-        bool baseTransferSuccess = baseToken.transferFrom(msg.sender, address(this), amount);
-        if (!baseTransferSuccess) revert TokenTransferFailed();
+        // Initialize system state
+        systemState = SystemState({
+            baseTokenFees: 0,
+            swapTokenFees: 0,
+            lastRateChangeTimestamp: block.timestamp,
+            lastFeeChangeTimestamp: block.timestamp,
+            devAddress: _devAddress,
+            lastDevAddressChangeTimestamp: block.timestamp
+        });
 
-        // Transfer swap tokens to user
-        bool swapTransferSuccess = swapToken.transfer(msg.sender, tokenToBuyAmount);
-        if (!swapTransferSuccess) revert TokenTransferFailed();
+        // Initialize fee config
+        feeConfig = FeeConfig({
+            maxFeeBps: 1000,
+            buyFeeBps: 100,
+            sellFeeBps: 200,
+            rateChangeCooldown: 90 days,
+            appChangeCooldown: 90 days
+        });
+
+        // Initialize stage constants
+        stageConstants = StageConstants({
+            cooldown: 45 days,
+            dailyWindow: 24 hours,
+            minBuyAmount: 1000e18,
+            minSellAmount: 5000e18
+        });
+
+        // Configure stages
+        stageConfig[UserStage.PLEB] = StageConfig({
+            burnAmount: 10e18,
+            upgradePointsThreshold: 0,
+            upgradeFuelThreshold: 5,
+            fuelRate: 1,
+            pointsAwarded: 1,
+            qualifyingBuyThreshold: 1000e18,
+            maxSellBps: 5000,
+            dailyLimitMultiplier: 100
+        });
+
+        stageConfig[UserStage.HUSTLER] = StageConfig({
+            burnAmount: 50e18,
+            upgradePointsThreshold: 100,
+            upgradeFuelThreshold: 15,
+            fuelRate: 2,
+            pointsAwarded: 2,
+            qualifyingBuyThreshold: 5000e18,
+            maxSellBps: 6000,
+            dailyLimitMultiplier: 100
+        });
+
+        stageConfig[UserStage.OG] = StageConfig({
+            burnAmount: 100e18,
+            upgradePointsThreshold: 500,
+            upgradeFuelThreshold: 30,
+            fuelRate: 3,
+            pointsAwarded: 3,
+            qualifyingBuyThreshold: 20000e18,
+            maxSellBps: 7000,
+            dailyLimitMultiplier: 100
+        });
+    }
+
+    function buyTokens(uint256 amount) external nonReentrant onlyNFTHolder whenNotPaused {
+        if (amount < stageConstants.minBuyAmount) revert MinimumAmountNotMet();
+        if (tokenConfig.baseToken.balanceOf(msg.sender) < amount) revert InsufficientBalance();
+        uint256 fee = (amount * feeConfig.buyFeeBps) / BASIS_POINTS;
+        uint256 tokenToBuyAmount = (amount - fee) * tokenConfig.exchangeRate;
+
+        systemState.baseTokenFees += fee;
+
+        tokenConfig.baseToken.safeTransferFrom(msg.sender, address(this), amount);
+        tokenConfig.swapToken.safeTransfer(msg.sender, tokenToBuyAmount);
+
+        // Update user points
+        UserState storage user = userStates[msg.sender];
+        StageConfig memory config = stageConfig[user.stage];
+
+        // Award points if threshold met
+        if (amount >= config.qualifyingBuyThreshold) {
+            user.points += config.pointsAwarded;
+        }
 
         emit TokensPurchased(msg.sender, amount, tokenToBuyAmount, fee);
     }
 
-    /**
-     * @dev Sell swap tokens for base tokens
-     * @param amount Amount of swap tokens to sell
-     */
-    function sellTokens(uint256 amount) external nonReentrant onlyNFTHolder {
-        // Calculate fee using current sellFeeBPS
-        uint256 fee = (amount * sellFeeBPS) / BASIS_POINTS;
+    function sellTokens(uint256 amount) external nonReentrant onlyNFTHolder whenNotPaused {
+        if (amount < stageConstants.minSellAmount) revert MinimumAmountNotMet();
+
+        // Calculate token conversion and fees
+        uint256 fee = (amount * feeConfig.sellFeeBps) / BASIS_POINTS;
         uint256 tokensAmountAfterFee = amount - fee;
-        // Calculate base tokens to receive
-        uint256 tokensToTransferAmount = tokensAmountAfterFee / exchangeRate;
+        uint256 tokensToTransferAmount = tokensAmountAfterFee / tokenConfig.exchangeRate;
+        if (tokensToTransferAmount == 0) revert MinimumAmountNotMet();
 
-        // Update fee tracking
-        swapTokenFees += fee;
+        UserState storage user = userStates[msg.sender];
+        StageConfig memory config = stageConfig[user.stage];
 
-        // Transfer swap tokens from user to contract
-        bool swapTransferSuccess = swapToken.transferFrom(msg.sender, address(this), amount);
-        if (!swapTransferSuccess) revert TokenTransferFailed();
+        // Calculate maximum allowed transaction size
+        uint256 contractBalance = tokenConfig.baseToken.balanceOf(address(this));
+        uint256 maxTxSell = (contractBalance * config.maxSellBps) / BASIS_POINTS;
 
-        // Transfer base tokens to user
-        bool baseTransferSuccess = baseToken.transfer(msg.sender, tokensToTransferAmount);
-        if (!baseTransferSuccess) revert TokenTransferFailed();
+        // Validate transaction limits
+        if (tokensToTransferAmount > maxTxSell) revert StageSellLimitExceeded();
+
+        // Handle OG stage cooldown for max-sized transactions
+        if (user.stage == UserStage.OG && tokensToTransferAmount == maxTxSell) {
+            if (block.timestamp <= user.lastStage3MaxSale + stageConstants.cooldown) {
+                revert StageCooldownActive();
+            }
+            user.lastStage3MaxSale = block.timestamp;
+        }
+
+        // Update daily tracking window
+        if (block.timestamp > user.dailyWindowStart + stageConstants.dailyWindow) {
+            user.dailySoldAmount = 0;
+            user.dailyWindowStart = block.timestamp;
+        }
+
+        // Calculate and validate daily limit
+        uint256 dailyLimit = config.qualifyingBuyThreshold * (config.dailyLimitMultiplier + user.fuel);
+        if (user.dailySoldAmount + tokensToTransferAmount > dailyLimit) {
+            revert DailySellLimitExceeded();
+        }
+
+        // Update state variables
+        user.dailySoldAmount += tokensToTransferAmount;
+        user.fuel = 0;
+        systemState.swapTokenFees += fee;
+
+        // Execute token transfers
+        tokenConfig.swapToken.safeTransferFrom(msg.sender, address(this), amount);
+        tokenConfig.baseToken.safeTransfer(msg.sender, tokensToTransferAmount);
 
         emit TokensSold(msg.sender, amount, tokensToTransferAmount, fee);
     }
 
-    // Admin Functions
+    function lightUp() external whenNotPaused nonReentrant {
+        UserState storage user = userStates[msg.sender];
+        StageConfig memory config = stageConfig[UserStage(user.stage)];
 
-    /**
-     * @dev Update the exchange rate (only once per 90 days)
-     * @param newRate New exchange rate
-     */
+        tokenConfig.baseToken.safeTransferFrom(msg.sender, BURN_ADDRESS, config.burnAmount);
+
+        uint256 newFuel = Math.min(user.fuel + config.fuelRate, MAX_FUEL_LIMIT);
+
+        if (newFuel > user.fuel) user.fuel = newFuel;
+        emit Lit(msg.sender, config.burnAmount, newFuel);
+    }
+
+    function upgradeStage() external whenNotPaused nonReentrant {
+        UserState storage user = userStates[msg.sender];
+        if (user.stage == UserStage.OG) revert MaxStageReached();
+
+        if (user.stage == UserStage.PLEB) {
+            if (user.points < stageConfig[UserStage.HUSTLER].upgradePointsThreshold)
+                revert InsufficientPointsForUpgrade();
+            user.stage = UserStage.HUSTLER;
+        } else if (user.stage == UserStage.HUSTLER) {
+            if (user.points < stageConfig[UserStage.OG].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
+            user.stage = UserStage.OG;
+        }
+        user.points = 0;
+        user.fuel = 0;
+        emit StageUpgraded(msg.sender, user.stage);
+    }
+
     function setExchangeRate(uint256 newRate) external onlyOwner {
-        if (block.timestamp < lastRateChangeTimestamp + RATE_CHANGE_COOLDOWN) revert RateLockStillActive();
+        if (block.timestamp < systemState.lastRateChangeTimestamp + feeConfig.rateChangeCooldown)
+            revert RateCooldownActive();
+        if (newRate == 0) revert InvalidExchangeRate();
 
-        exchangeRate = newRate;
-        lastRateChangeTimestamp = block.timestamp;
-
+        tokenConfig.exchangeRate = newRate;
+        systemState.lastRateChangeTimestamp = block.timestamp;
         emit ExchangeRateUpdated(newRate);
     }
 
-    /**
-     * @dev Update both buy and sell fee rates (only once per 90 days)
-     * @param newBuyFeeBPS New buy fee in basis points
-     * @param newSellFeeBPS New sell fee in basis points
-     */
     function setFeeRates(uint256 newBuyFeeBPS, uint256 newSellFeeBPS) external onlyOwner {
-        // Check cooldown period
-        if (block.timestamp < lastFeeChangeTimestamp + APP_CHANGE_COOLDOWN) revert FeeLockStillActive();
+        if (block.timestamp < systemState.lastFeeChangeTimestamp + feeConfig.appChangeCooldown)
+            revert FeeCooldownActive();
+        if (newBuyFeeBPS > feeConfig.maxFeeBps || newSellFeeBPS > feeConfig.maxFeeBps) revert InvalidFeeBPS();
 
-        // Validate new fee rates
-        if (newBuyFeeBPS > MAX_FEE_BPS || newSellFeeBPS > MAX_FEE_BPS) revert InvalidFeeBPS();
-
-        buyFeeBPS = newBuyFeeBPS;
-        sellFeeBPS = newSellFeeBPS;
-        lastFeeChangeTimestamp = block.timestamp;
-
+        feeConfig.buyFeeBps = newBuyFeeBPS;
+        feeConfig.sellFeeBps = newSellFeeBPS;
+        systemState.lastFeeChangeTimestamp = block.timestamp;
         emit FeeRatesUpdated(newBuyFeeBPS, newSellFeeBPS);
-    }
-
-    /**
-     * @dev Check if fee rates can be changed
-     * @return True if the fee change cooldown has passed, false otherwise
-     */
-    function canChangeFeeRates() external view returns (bool) {
-        return block.timestamp >= lastFeeChangeTimestamp + APP_CHANGE_COOLDOWN;
     }
 
     function setDevAddress(address newDevAddress) external onlyOwner {
         if (newDevAddress == address(0)) revert InvalidDevAddress();
-        if (block.timestamp < lastDevAddressChangeTimestamp + APP_CHANGE_COOLDOWN)
+        if (block.timestamp < systemState.lastDevAddressChangeTimestamp + feeConfig.appChangeCooldown)
             revert AppChangeCooldownStillActive();
-        DEV_ADDRESS = newDevAddress;
+        systemState.devAddress = newDevAddress;
+        systemState.lastDevAddressChangeTimestamp = block.timestamp;
     }
 
-    /**
-     * @dev Withdraw accumulated fees to a specified address
-     */
-    function withdrawFees() external nonReentrant onlyAuthorized {
-        address to = DEV_ADDRESS;
-        uint256 baseTokenFeesToWithdraw = baseTokenFees;
-        uint256 swapTokenFeesToWithdraw = swapTokenFees;
+    function withdrawFees() external nonReentrant onlyAuthorized whenNotPaused {
+        address to = systemState.devAddress;
+        uint256 baseTokenFeesToWithdraw = systemState.baseTokenFees;
+        uint256 swapTokenFeesToWithdraw = systemState.swapTokenFees;
 
-        // Reset fee tracking
-        baseTokenFees = 0;
-        swapTokenFees = 0;
+        systemState.baseTokenFees = 0;
+        systemState.swapTokenFees = 0;
 
-        // Transfer base token fees
         if (baseTokenFeesToWithdraw > 0) {
-            bool baseTransferSuccess = baseToken.transfer(to, baseTokenFeesToWithdraw);
-            if (!baseTransferSuccess) revert TokenTransferFailed();
+            tokenConfig.baseToken.safeTransfer(to, baseTokenFeesToWithdraw);
         }
 
-        // Transfer swap token fees
         if (swapTokenFeesToWithdraw > 0) {
-            bool swapTransferSuccess = swapToken.transfer(to, swapTokenFeesToWithdraw);
-            if (!swapTransferSuccess) revert TokenTransferFailed();
+            tokenConfig.swapToken.safeTransfer(to, swapTokenFeesToWithdraw);
         }
 
         emit FeesWithdrawn(to, baseTokenFeesToWithdraw, swapTokenFeesToWithdraw);
@@ -227,8 +314,8 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
     /**
      * @dev Withdraw ETH from the contract (only admin)
      */
-    function withdrawETH() external nonReentrant onlyAuthorized {
-        address to = DEV_ADDRESS;
+    function withdrawETH() external nonReentrant onlyAuthorized whenNotPaused {
+        address to = systemState.devAddress;
         uint256 amount = address(this).balance;
         (bool success, ) = to.call{ value: amount }("");
         if (!success) revert ETHTransferFailed();
@@ -236,12 +323,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
         emit ETHWithdrawn(to, amount);
     }
 
-    // Whitelist Management Functions
-
-    /**
-     * @dev Add a collection to the whitelist
-     * @param collectionAddress Address of the NFT collection to add
-     */
     function addWhitelistedCollection(address collectionAddress) external onlyOwner {
         if (whitelistedCollections.length >= MAX_WHITELISTED_COLLECTIONS) revert ExceedsMaxWhitelistedCollections();
         if (_isCollectionWhitelisted(collectionAddress)) revert CollectionAlreadyAdded();
@@ -250,10 +331,15 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
         emit WhitelistedCollectionAdded(collectionAddress);
     }
 
-    /**
-     * @dev Add multiple collections to the whitelist
-     * @param collections Array of collection addresses to add
-     */
+    function removeWhitelistedCollection(address collectionAddress) external onlyOwner {
+        uint256 index = _findCollectionIndex(collectionAddress);
+        if (index >= whitelistedCollections.length) revert CollectionAddressNotFound();
+
+        whitelistedCollections[index] = whitelistedCollections[whitelistedCollections.length - 1];
+        whitelistedCollections.pop();
+        emit WhitelistedCollectionRemoved(collectionAddress);
+    }
+
     function batchAddWhitelistedCollections(address[] calldata collections) external onlyOwner {
         if (whitelistedCollections.length + collections.length > MAX_WHITELISTED_COLLECTIONS)
             revert ExceedsMaxWhitelistedCollections();
@@ -266,60 +352,89 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
         }
     }
 
-    /**
-     * @dev Remove a collection from the whitelist
-     * @param collectionAddress Address of the NFT collection to remove
-     */
-    function removeWhitelistedCollection(address collectionAddress) external onlyOwner {
-        uint256 index = _findCollectionIndex(collectionAddress);
-        if (index >= whitelistedCollections.length) revert CollectionAddressNotFound();
+    function initializeWhitelistedCollections(address[] calldata collections) external onlyAuthorized {
+        if (whitelistedCollections.length + collections.length > MAX_WHITELISTED_COLLECTIONS)
+            revert ExceedsMaxWhitelistedCollections();
+        if (whitelistedCollections.length > 0) revert WhitelistedCollectionsAlreadyInitialized();
 
-        // Swap and pop pattern for efficient removal
-        whitelistedCollections[index] = whitelistedCollections[whitelistedCollections.length - 1];
-        whitelistedCollections.pop();
-
-        emit WhitelistedCollectionRemoved(collectionAddress);
+        for (uint256 i = 0; i < collections.length; i++) {
+            if (!_isCollectionWhitelisted(collections[i])) {
+                whitelistedCollections.push(collections[i]);
+                emit WhitelistedCollectionAdded(collections[i]);
+            }
+        }
     }
 
-    // Helper Functions
+    function batchRemoveWhitelistedCollections(address[] memory _collectionAddresses) external onlyOwner whenPaused {
+        uint256 len = _collectionAddresses.length;
 
-    /**
-     * @dev Check if a user has a valid key to any of the whitelisted collections
-     * @param user Address of the user to check
-     * @return True if the user has a valid key, false otherwise
-     */
+        for (uint256 i; i < len; ++i) {
+            address collectionAddress = _collectionAddresses[i];
+
+            // Check if the collection exists in whitelisted collections
+            require(_findCollectionIndex(collectionAddress) >= 0, "Collection not found");
+
+            delete whitelistedCollections[_findCollectionIndex(collectionAddress)];
+            emit WhitelistedCollectionRemoved(collectionAddress);
+        }
+    }
+
+    function canChangeFeeRates() external view returns (bool) {
+        return block.timestamp >= systemState.lastFeeChangeTimestamp + feeConfig.appChangeCooldown;
+    }
+
+    function canChangeExchangeRate() external view returns (bool) {
+        return block.timestamp >= systemState.lastRateChangeTimestamp + feeConfig.rateChangeCooldown;
+    }
+
     function hasValidKey(address user) public view returns (bool) {
         if (whitelistedCollections.length == 0) return false;
 
         for (uint256 i = 0; i < whitelistedCollections.length; i++) {
-            IPublicLock lock = IPublicLock(whitelistedCollections[i]);
-            if (lock.getHasValidKey(user)) {
+            if (IPublicLock(whitelistedCollections[i]).getHasValidKey(user)) {
                 return true;
             }
         }
-
         return false;
     }
 
-    /**
-     * @dev Returns the address of the first collection for which the user has a valid key
-     * @param user Address of the user to check
-     * @return The address of the first valid collection, or address(0) if none found
-     */
-    function getFirstValidKeyCollection(address user) public view returns (address) {
+    function getFirstValidCollection(address user) public view returns (address) {
         for (uint256 i = 0; i < whitelistedCollections.length; i++) {
             if (IPublicLock(whitelistedCollections[i]).getHasValidKey(user)) {
                 return whitelistedCollections[i];
             }
         }
-        return address(0); // Return address(0) if no valid lock is found
+        return address(0);
     }
 
-    /**
-     * @dev Check if a collection is already whitelisted
-     * @param collectionAddress Address of the collection to check
-     * @return True if the collection is whitelisted, false otherwise
-     */
+    function getStageConstants() public view returns (StageConstants memory _stageConstants) {
+        _stageConstants = stageConstants;
+    }
+
+    function getFeeConfig() public view returns (FeeConfig memory _feeConfig) {
+        _feeConfig = feeConfig;
+    }
+
+    function getTokenConfig() public view returns (TokenConfig memory _tokenConfig) {
+        _tokenConfig = tokenConfig;
+    }
+
+    function getSystemState() public view returns (SystemState memory _systemState) {
+        _systemState = systemState;
+    }
+
+    function getUserState(address user) public view returns (UserState memory _userState) {
+        _userState = userStates[user];
+    }
+
+    function getStageConfig(UserStage _stage) public view returns (StageConfig memory _stageConfig) {
+        _stageConfig = stageConfig[_stage];
+    }
+
+    function getWhitelistedCollections() external view returns (address[] memory) {
+        return whitelistedCollections;
+    }
+
     function _isCollectionWhitelisted(address collectionAddress) internal view returns (bool) {
         for (uint256 i = 0; i < whitelistedCollections.length; i++) {
             if (whitelistedCollections[i] == collectionAddress) {
@@ -329,38 +444,57 @@ contract DGTokenVendor is Ownable, ReentrancyGuard {
         return false;
     }
 
-    /**
-     * @dev Find the index of a collection in the whitelist
-     * @param collectionAddress Address of the collection to find
-     * @return The index of the collection, or the length of the array if not found
-     */
     function _findCollectionIndex(address collectionAddress) internal view returns (uint256) {
         for (uint256 i = 0; i < whitelistedCollections.length; i++) {
             if (whitelistedCollections[i] == collectionAddress) {
                 return i;
             }
         }
-        return whitelistedCollections.length; // Not found
+        return whitelistedCollections.length;
+    }
+
+    function setStageConfig(UserStage _stage, StageConfig calldata _config) external onlyOwner {
+        uint256 minSellBps = 100;
+        uint256 invalidLowerBound = 0;
+        if (_config.maxSellBps < minSellBps || _config.maxSellBps > MAX_SELL_BPS_LIMIT) revert InvalidFeeBPS();
+        if (_config.fuelRate == invalidLowerBound || _config.fuelRate > MAX_FUEL_RATE) revert InvalidFuelRate();
+        if (_config.pointsAwarded == invalidLowerBound || _config.pointsAwarded > MAX_POINTS_AWARDED) revert InvalidPointsAwarded();
+        if (_config.dailyLimitMultiplier == invalidLowerBound || _config.dailyLimitMultiplier > MAX_DAILY_MULTIPLIER) revert InvalidDailyLimitMultiplier();
+        if (_config.burnAmount == invalidLowerBound) revert InvalidBurnAmount();
+        if (_config.upgradePointsThreshold == invalidLowerBound) revert InvalidUpgradePointsThreshold();
+        if (_config.upgradeFuelThreshold == invalidLowerBound) revert InvalidUpgradeFuelThreshold();
+        if (_config.qualifyingBuyThreshold == invalidLowerBound) revert InvalidQualifyingBuyThreshold();
+ 
+        StageConfig storage storedConfig = stageConfig[_stage];
+        StageConfig memory oldConfig = storedConfig;
+
+        storedConfig.burnAmount = _config.burnAmount;
+        storedConfig.upgradePointsThreshold = _config.upgradePointsThreshold;
+        storedConfig.upgradeFuelThreshold = _config.upgradeFuelThreshold;
+        storedConfig.fuelRate = _config.fuelRate;
+        storedConfig.pointsAwarded = _config.pointsAwarded;
+        storedConfig.qualifyingBuyThreshold = _config.qualifyingBuyThreshold;
+        storedConfig.maxSellBps = _config.maxSellBps;
+        storedConfig.dailyLimitMultiplier = _config.dailyLimitMultiplier;
+
+        emit StageConfigUpdated(_stage, oldConfig, storedConfig);
     }
 
     /**
-     * @dev Get all whitelisted collections
-     * @return Array of whitelisted collection addresses
+     * @notice Updates the fee configuration
+     * @param _rateChangeCooldown Cooldown for changing exchange rate
+     * @param _appChangeCooldown Cooldown for changing app settings
      */
-    function getWhitelistedCollections() external view returns (address[] memory) {
-        return whitelistedCollections;
+    function setCooldownConfig(uint256 _rateChangeCooldown, uint256 _appChangeCooldown) external onlyOwner {
+        uint256 minCooldown = 14 days;
+        uint256 maxCooldown = 180 days;
+        if (_rateChangeCooldown < minCooldown || _rateChangeCooldown > maxCooldown) revert InvalidCooldown();
+        if (_appChangeCooldown < minCooldown || _appChangeCooldown > maxCooldown) revert InvalidCooldown();
+
+        feeConfig.rateChangeCooldown = _rateChangeCooldown;
+        feeConfig.appChangeCooldown = _appChangeCooldown;
+        emit FeeConfigUpdated(_rateChangeCooldown, _appChangeCooldown);
     }
 
-    /**
-     * @dev Check if a user can change the exchange rate
-     * @return True if the rate change cooldown has passed, false otherwise
-     */
-    function canChangeExchangeRate() external view returns (bool) {
-        return block.timestamp >= lastRateChangeTimestamp + RATE_CHANGE_COOLDOWN;
-    }
-
-    /**
-     * @dev Receive function to allow the contract to receive ETH
-     */
     receive() external payable {}
 }
