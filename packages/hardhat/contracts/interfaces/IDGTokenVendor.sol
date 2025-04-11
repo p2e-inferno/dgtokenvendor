@@ -160,6 +160,12 @@ interface IDGTokenVendor {
     event ExchangeRateUpdated(uint256 newRate);
 
     /**
+     * @notice Emitted when the developer address is updated
+     * @param newDevAddress The new developer address
+     */
+    event DevAddressUpdated(address indexed newDevAddress);
+
+    /**
      * @notice Emitted when fees are withdrawn
      * @param to Address receiving the fees
      * @param baseTokenFees Amount of base token fees withdrawn
@@ -307,12 +313,6 @@ interface IDGTokenVendor {
      * @param collections Array of collection addresses to whitelist
      */
     function initializeWhitelistedCollections(address[] calldata collections) external;
-
-    /**
-     * @notice Batch remove whitelisted collections
-     * @param _collectionAddresses Array of collection addresses to remove
-     */
-    function batchRemoveWhitelistedCollections(address[] memory _collectionAddresses) external;
 
     /**
      * @notice Batch add whitelisted collections

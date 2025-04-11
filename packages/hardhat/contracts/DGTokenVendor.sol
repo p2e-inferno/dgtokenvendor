@@ -14,6 +14,7 @@ import "./interfaces/IDGTokenVendor.sol";
 error AppChangeCooldownStillActive();
 error CollectionAddressNotFound();
 error CollectionAlreadyAdded();
+error CannotRemoveMoreCollectionsThanExist();
 error DailySellLimitExceeded();
 error ExceedsMaxWhitelistedCollections();
 error ETHTransferFailed();
@@ -167,10 +168,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         uint256 tokenToBuyAmount = (amount - fee) * tokenConfig.exchangeRate;
 
         systemState.baseTokenFees += fee;
-
-        tokenConfig.baseToken.safeTransferFrom(msg.sender, address(this), amount);
-        tokenConfig.swapToken.safeTransfer(msg.sender, tokenToBuyAmount);
-
         // Update user points
         UserState storage user = userStates[msg.sender];
         StageConfig memory config = stageConfig[user.stage];
@@ -179,6 +176,9 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         if (amount >= config.qualifyingBuyThreshold) {
             user.points += config.pointsAwarded;
         }
+
+        tokenConfig.baseToken.safeTransferFrom(msg.sender, address(this), amount);
+        tokenConfig.swapToken.safeTransfer(msg.sender, tokenToBuyAmount);
 
         emit TokensPurchased(msg.sender, amount, tokenToBuyAmount, fee);
     }
@@ -234,7 +234,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         emit TokensSold(msg.sender, amount, tokensToTransferAmount, fee);
     }
 
-    function lightUp() external whenNotPaused nonReentrant {
+    function lightUp() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
         StageConfig memory config = stageConfig[UserStage(user.stage)];
 
@@ -246,7 +246,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         emit Lit(msg.sender, config.burnAmount, newFuel);
     }
 
-    function upgradeStage() external whenNotPaused nonReentrant {
+    function upgradeStage() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
         if (user.stage == UserStage.OG) revert MaxStageReached();
 
@@ -290,6 +290,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             revert AppChangeCooldownStillActive();
         systemState.devAddress = newDevAddress;
         systemState.lastDevAddressChangeTimestamp = block.timestamp;
+        emit DevAddressUpdated(newDevAddress);
     }
 
     function withdrawFees() external nonReentrant onlyAuthorized whenNotPaused {
@@ -362,20 +363,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
                 whitelistedCollections.push(collections[i]);
                 emit WhitelistedCollectionAdded(collections[i]);
             }
-        }
-    }
-
-    function batchRemoveWhitelistedCollections(address[] memory _collectionAddresses) external onlyOwner whenPaused {
-        uint256 len = _collectionAddresses.length;
-
-        for (uint256 i; i < len; ++i) {
-            address collectionAddress = _collectionAddresses[i];
-
-            // Check if the collection exists in whitelisted collections
-            require(_findCollectionIndex(collectionAddress) >= 0, "Collection not found");
-
-            delete whitelistedCollections[_findCollectionIndex(collectionAddress)];
-            emit WhitelistedCollectionRemoved(collectionAddress);
         }
     }
 
