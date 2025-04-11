@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
-
+import { ownerAddress, devAddress } from "./02_deploy_digitoken";
 /**
  * Deploys a contract named "DGToken" using the deployer account and
  * constructor arguments set to the deployer address
@@ -25,8 +25,15 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const dgTokenAddress = await dgToken.getAddress();
   const upTokenAddress = "0xaC27fa800955849d6D17cC8952Ba9dD6EAA66187"; // UP token address on base
   const initialExchangeRate = 10;
-  const devAddress = "0xca7632327567796e51920f6b16373e92c7823854";
-  const ownerAddress = "0x65bA0624403Fc5Ca2b20479e9F626eD4D78E0aD9";
+  
+  // const ownerAddress = "0xB34567C4cA697b39F72e1a8478f285329A98ed1b"; // Unlock DAO treasury on base
+  const initialWhitelistedCollections = [
+    "0x0000000000000000000000000000000000000000", // DG Nation
+    "0x0000000000000000000000000000000000000000", // DG Sponsors
+    "0x0000000000000000000000000000000000000000", // DG Scholars
+    "0x0000000000000000000000000000000000000000", // DG DG LPs
+    "0x0000000000000000000000000000000000000000", // DG Partners
+  ];
 
   await deploy("DGTokenVendor", {
     from: deployer,
@@ -38,10 +45,9 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
     autoMine: true,
   });
 
-  // Get the deployed contract
-  // const dgToken = await hre.ethers.getContract<Contract>("DGToken", deployer);
-  //  await dgToken.transfer(dgTokenAddress, hre.ethers.parseEther("1000"));
+  // Initialize the application
   const dgTokenVendor = await hre.ethers.getContract<Contract>("DGTokenVendor", deployer);
+  await dgTokenVendor.initializeWhitelistedCollections(initialWhitelistedCollections);
   await dgTokenVendor.transferOwnership(ownerAddress);
 };
 

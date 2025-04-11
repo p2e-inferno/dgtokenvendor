@@ -31,6 +31,8 @@ The system consists of several smart contracts:
 1. Deploy the contracts using the deployment script
 2. Manage whitelisted NFT collections using `addWhitelistedCollection`
 3. Update exchange rates (max once per 90 days) using `setExchangeRate`
+3. Update fee rates (max once per 90 days) using `setExchangeRate`
+3. Update fees receiver address (max once per 90 days) using `setDevAddress`
 4. Withdraw collected fees with `withdrawFees`
 
 ### As a User
@@ -43,7 +45,8 @@ The system consists of several smart contracts:
 ## Configuration
 
 - Maximum whitelist size: 10 collections
-- Fee percentage: 1%
+- Buy Fee percentage: 1%
+- Sell Fee percentage: 2%
 - Rate change cooldown: 90 days
 
 ## Development
@@ -52,16 +55,13 @@ The contracts are built with Solidity 0.8.20 and use OpenZeppelin contracts for 
 
 ```bash
 # Install dependencies
-npm install
-
-# Compile contracts
-npx hardhat compile
+yarn install
 
 # Deploy contracts
-npx hardhat deploy
+yarn deploy
 
-# Run tests
-npx hardhat test
+# Run frontend
+yarn start
 ```
 
 ## Security Features
