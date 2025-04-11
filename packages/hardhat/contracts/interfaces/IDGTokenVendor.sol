@@ -51,7 +51,7 @@ interface IDGTokenVendor {
      * @param minSellAmount Minimum amount for selling tokens
      */
     struct StageConstants {
-        uint256 cooldown;
+        uint256 maxSellCooldown;
         uint256 dailyWindow;
         uint256 minBuyAmount;
         uint256 minSellAmount;

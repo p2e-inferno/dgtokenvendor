@@ -46,7 +46,7 @@ interface IPublicLock {
 
     function tokenOfOwnerByIndex(address _user, uint256 _index) external view returns (uint256);
 }
- 
+
 contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
     using SafeERC20 for IERC20;
 
@@ -116,11 +116,11 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
         // Initialize stage constants
         stageConstants = StageConstants({
-            cooldown: 45 days,
+            maxSellCooldown: 45 days,
             dailyWindow: 24 hours,
             minBuyAmount: 1000e18,
             minSellAmount: 5000e18
-        });
+        }); 
 
         // Configure stages
         stageConfig[UserStage.PLEB] = StageConfig({
@@ -200,7 +200,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
         // Handle OG stage cooldown for max-sized transactions
         if (user.stage == UserStage.OG && tokensToTransferAmount == maxTxSell) {
-            if (block.timestamp <= user.lastStage3MaxSale + stageConstants.cooldown) {
+            if (block.timestamp <= user.lastStage3MaxSale + stageConstants.maxSellCooldown) {
                 revert StageCooldownActive();
             }
             user.lastStage3MaxSale = block.timestamp;
@@ -244,9 +244,9 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
     function upgradeStage() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
-    
+
         if (user.stage == UserStage.OG) revert MaxStageReached();
-        if(user.fuel < stageConfig[user.stage].upgradeFuelThreshold) revert InsufficientFuelForUpgrade(); 
+        if (user.fuel < stageConfig[user.stage].upgradeFuelThreshold) revert InsufficientFuelForUpgrade();
         if (user.points < stageConfig[user.stage].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
 
         if (user.stage == UserStage.PLEB) {
@@ -328,15 +328,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         emit WhitelistedCollectionAdded(collectionAddress);
     }
 
-    function removeWhitelistedCollection(address collectionAddress) external onlyOwner {
-        uint256 index = _findCollectionIndex(collectionAddress);
-        if (index >= whitelistedCollections.length) revert CollectionAddressNotFound();
-
-        whitelistedCollections[index] = whitelistedCollections[whitelistedCollections.length - 1];
-        whitelistedCollections.pop();
-        emit WhitelistedCollectionRemoved(collectionAddress);
-    }
-
     function batchAddWhitelistedCollections(address[] calldata collections) external onlyOwner {
         if (whitelistedCollections.length + collections.length > MAX_WHITELISTED_COLLECTIONS)
             revert ExceedsMaxWhitelistedCollections();
@@ -346,6 +337,40 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
                 whitelistedCollections.push(collections[i]);
                 emit WhitelistedCollectionAdded(collections[i]);
             }
+        }
+    }
+
+    function removeWhitelistedCollection(address collectionAddress) external onlyOwner {
+        uint256 index = _findCollectionIndex(collectionAddress);
+        if (index >= whitelistedCollections.length) revert CollectionAddressNotFound();
+
+        whitelistedCollections[index] = whitelistedCollections[whitelistedCollections.length - 1];
+        whitelistedCollections.pop();
+        emit WhitelistedCollectionRemoved(collectionAddress);
+    }
+
+    function batchRemoveWhitelistedCollections(
+        address[] calldata collections
+    ) external onlyOwner {
+        uint256 length = collections.length;
+        for (uint256 i = length; i > 0; ) {
+            unchecked {
+                i--; 
+            }
+            
+            address collection = collections[i];
+            uint256 index = _findCollectionIndex(collection);
+            if (index >= whitelistedCollections.length) {
+                revert CollectionAddressNotFound();
+            }
+
+            uint256 lastIndex = whitelistedCollections.length - 1;
+            if (index != lastIndex) {
+                whitelistedCollections[index] = whitelistedCollections[lastIndex];
+            }
+            whitelistedCollections.pop();
+
+            emit WhitelistedCollectionRemoved(collection);
         }
     }
 
@@ -441,13 +466,15 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         uint256 invalidLowerBound = 0;
         if (_config.maxSellBps < minSellBps || _config.maxSellBps > MAX_SELL_BPS_LIMIT) revert InvalidFeeBPS();
         if (_config.fuelRate == invalidLowerBound || _config.fuelRate > MAX_FUEL_RATE) revert InvalidFuelRate();
-        if (_config.pointsAwarded == invalidLowerBound || _config.pointsAwarded > MAX_POINTS_AWARDED) revert InvalidPointsAwarded();
-        if (_config.dailyLimitMultiplier == invalidLowerBound || _config.dailyLimitMultiplier > MAX_DAILY_MULTIPLIER) revert InvalidDailyLimitMultiplier();
+        if (_config.pointsAwarded == invalidLowerBound || _config.pointsAwarded > MAX_POINTS_AWARDED)
+            revert InvalidPointsAwarded();
+        if (_config.dailyLimitMultiplier == invalidLowerBound || _config.dailyLimitMultiplier > MAX_DAILY_MULTIPLIER)
+            revert InvalidDailyLimitMultiplier();
         if (_config.burnAmount == invalidLowerBound) revert InvalidBurnAmount();
         if (_config.upgradePointsThreshold == invalidLowerBound) revert InvalidUpgradePointsThreshold();
         if (_config.upgradeFuelThreshold == invalidLowerBound) revert InvalidUpgradeFuelThreshold();
         if (_config.qualifyingBuyThreshold == invalidLowerBound) revert InvalidQualifyingBuyThreshold();
- 
+
         StageConfig storage storedConfig = stageConfig[_stage];
         StageConfig memory oldConfig = storedConfig;
 
