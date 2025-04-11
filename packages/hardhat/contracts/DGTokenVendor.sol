@@ -14,7 +14,6 @@ import "./interfaces/IDGTokenVendor.sol";
 error AppChangeCooldownStillActive();
 error CollectionAddressNotFound();
 error CollectionAlreadyAdded();
-error CannotRemoveMoreCollectionsThanExist();
 error DailySellLimitExceeded();
 error ExceedsMaxWhitelistedCollections();
 error ETHTransferFailed();
@@ -25,7 +24,6 @@ error InvalidFeeBPS();
 error InvalidDevAddress();
 error InvalidExchangeRate();
 error InsufficientBalance();
-error InvalidParameter();
 error InvalidFuelRate();
 error InvalidPointsAwarded();
 error InvalidDailyLimitMultiplier();
@@ -34,12 +32,10 @@ error InvalidUpgradePointsThreshold();
 error InvalidUpgradeFuelThreshold();
 error InvalidQualifyingBuyThreshold();
 error InvalidCooldown();
-error LightUpFailed();
 error MinimumAmountNotMet();
 error MaxStageReached();
 error NoValidKeyForUserFound();
 error RateCooldownActive();
-error TokenTransferFailed();
 error StageSellLimitExceeded();
 error StageCooldownActive();
 error UnauthorizedCaller();
@@ -248,14 +244,14 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
     function upgradeStage() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
+    
         if (user.stage == UserStage.OG) revert MaxStageReached();
+        if(user.fuel < stageConfig[user.stage].upgradeFuelThreshold) revert InsufficientFuelForUpgrade(); 
+        if (user.points < stageConfig[user.stage].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
 
         if (user.stage == UserStage.PLEB) {
-            if (user.points < stageConfig[UserStage.HUSTLER].upgradePointsThreshold)
-                revert InsufficientPointsForUpgrade();
             user.stage = UserStage.HUSTLER;
         } else if (user.stage == UserStage.HUSTLER) {
-            if (user.points < stageConfig[UserStage.OG].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
             user.stage = UserStage.OG;
         }
         user.points = 0;
