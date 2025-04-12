@@ -400,6 +400,12 @@ interface IDGTokenVendor {
     function getUserState(address user) external view returns (UserState memory _userState);
 
     /**
+     * @notice Get exchange rate
+     * @return _exchangeRate The exchange rate
+     */
+    function getExchangeRate() external view returns (uint256);
+
+    /**
      * @notice Get stage configuration
      * @param _stage The stage to get configuration for
      * @return _stageConfig The stage configuration

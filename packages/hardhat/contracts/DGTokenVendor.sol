@@ -87,15 +87,20 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         address _devAddress
     ) Ownable(msg.sender) {
         if (_initialExchangeRate == 0) revert InvalidExchangeRate();
+        // TODO: Uncomment this once the contract is ready to be deployed to mainnet
+        // _initialize(_baseToken, _swapToken, _initialExchangeRate, _devAddress);
 
-        // Initialize token config
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////// TODO: Remove this once the contract is ready to be deployed to mainnet ////////////
+        //////////// Testnet values use `_initialize()` for mainnet deployment ////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
         tokenConfig = TokenConfig({
             baseToken: IERC20(_baseToken),
             swapToken: IERC20(_swapToken),
             exchangeRate: _initialExchangeRate
         });
 
-        // Initialize system state
         systemState = SystemState({
             baseTokenFees: 0,
             swapTokenFees: 0,
@@ -105,16 +110,14 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             lastDevAddressChangeTimestamp: block.timestamp
         });
 
-        // Initialize fee config
         feeConfig = FeeConfig({
             maxFeeBps: 1000,
             buyFeeBps: 100,
             sellFeeBps: 200,
-            rateChangeCooldown: 90 days,
-            appChangeCooldown: 90 days
+            rateChangeCooldown: 0 days,
+            appChangeCooldown: 0 days
         });
 
-        // Initialize stage constants
         stageConstants = StageConstants({
             maxSellCooldown: 45 days,
             dailyWindow: 24 hours,
@@ -122,13 +125,12 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             minSellAmount: 5000e18
         }); 
 
-        // Configure stages
         stageConfig[UserStage.PLEB] = StageConfig({
             burnAmount: 10e18,
             upgradePointsThreshold: 0,
             upgradeFuelThreshold: 5,
-            fuelRate: 1,
-            pointsAwarded: 1,
+            fuelRate: 5,
+            pointsAwarded: 5,
             qualifyingBuyThreshold: 1000e18,
             maxSellBps: 5000,
             dailyLimitMultiplier: 100
@@ -136,10 +138,10 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
         stageConfig[UserStage.HUSTLER] = StageConfig({
             burnAmount: 50e18,
-            upgradePointsThreshold: 100,
+            upgradePointsThreshold: 20,
             upgradeFuelThreshold: 15,
-            fuelRate: 2,
-            pointsAwarded: 2,
+            fuelRate: 5,
+            pointsAwarded: 5,
             qualifyingBuyThreshold: 5000e18,
             maxSellBps: 6000,
             dailyLimitMultiplier: 100
@@ -147,14 +149,22 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
         stageConfig[UserStage.OG] = StageConfig({
             burnAmount: 100e18,
-            upgradePointsThreshold: 500,
-            upgradeFuelThreshold: 30,
-            fuelRate: 3,
-            pointsAwarded: 3,
+            upgradePointsThreshold: 20,
+            upgradeFuelThreshold: 20,
+            fuelRate: 5,
+            pointsAwarded: 5,
             qualifyingBuyThreshold: 20000e18,
             maxSellBps: 7000,
             dailyLimitMultiplier: 100
         });
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
     function buyTokens(uint256 amount) external nonReentrant onlyNFTHolder whenNotPaused {
@@ -214,12 +224,12 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
         // Calculate and validate daily limit
         uint256 dailyLimit = config.qualifyingBuyThreshold * (config.dailyLimitMultiplier + user.fuel);
-        if (user.dailySoldAmount + tokensToTransferAmount > dailyLimit) {
+        if (user.dailySoldAmount + amount > dailyLimit) {
             revert DailySellLimitExceeded();
         }
 
         // Update state variables
-        user.dailySoldAmount += tokensToTransferAmount;
+        user.dailySoldAmount += amount;
         user.fuel = 0;
         systemState.swapTokenFees += fee;
 
@@ -244,16 +254,13 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
     function upgradeStage() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
+        if (user.stage == UserStage.OG) revert MaxStageReached(); 
+        UserStage nextStage = UserStage(uint256(user.stage) + 1);
 
-        if (user.stage == UserStage.OG) revert MaxStageReached();
-        if (user.fuel < stageConfig[user.stage].upgradeFuelThreshold) revert InsufficientFuelForUpgrade();
-        if (user.points < stageConfig[user.stage].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
+        if (user.points < stageConfig[nextStage].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
+        if (user.fuel < stageConfig[nextStage].upgradeFuelThreshold) revert InsufficientFuelForUpgrade();
 
-        if (user.stage == UserStage.PLEB) {
-            user.stage = UserStage.HUSTLER;
-        } else if (user.stage == UserStage.HUSTLER) {
-            user.stage = UserStage.OG;
-        }
+        user.stage = nextStage;
         user.points = 0;
         user.fuel = 0;
         emit StageUpgraded(msg.sender, user.stage);
@@ -439,6 +446,10 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         _stageConfig = stageConfig[_stage];
     }
 
+    function getExchangeRate() external view returns (uint256) {
+        return tokenConfig.exchangeRate;
+    }
+
     function getWhitelistedCollections() external view returns (address[] memory) {
         return whitelistedCollections;
     }
@@ -505,6 +516,74 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         feeConfig.appChangeCooldown = _appChangeCooldown;
         emit FeeConfigUpdated(_rateChangeCooldown, _appChangeCooldown);
     }
+    function _initialize(address _baseToken, address _swapToken, uint256 _initialExchangeRate, address _devAddress) private {
+        // Initialize token config
+        tokenConfig = TokenConfig({
+            baseToken: IERC20(_baseToken),
+            swapToken: IERC20(_swapToken),
+            exchangeRate: _initialExchangeRate
+        });
 
+        // Initialize system state
+        systemState = SystemState({
+            baseTokenFees: 0,
+            swapTokenFees: 0,
+            lastRateChangeTimestamp: block.timestamp,
+            lastFeeChangeTimestamp: block.timestamp,
+            devAddress: _devAddress,
+            lastDevAddressChangeTimestamp: block.timestamp
+        });
+
+        // Initialize fee config
+        feeConfig = FeeConfig({
+            maxFeeBps: 1000,
+            buyFeeBps: 100,
+            sellFeeBps: 200,
+            rateChangeCooldown: 90 days,
+            appChangeCooldown: 90 days
+        });
+
+        // Initialize stage constants
+        stageConstants = StageConstants({
+            maxSellCooldown: 45 days,
+            dailyWindow: 24 hours,
+            minBuyAmount: 1000e18,
+            minSellAmount: 5000e18
+        }); 
+
+        // Configure stages
+        stageConfig[UserStage.PLEB] = StageConfig({
+            burnAmount: 10e18,
+            upgradePointsThreshold: 0,
+            upgradeFuelThreshold: 0,
+            fuelRate: 1,
+            pointsAwarded: 1,
+            qualifyingBuyThreshold: 1000e18,
+            maxSellBps: 5000,
+            dailyLimitMultiplier: 100
+        });
+
+        stageConfig[UserStage.HUSTLER] = StageConfig({
+            burnAmount: 50e18,
+            upgradePointsThreshold: 100,
+            upgradeFuelThreshold: 10,
+            fuelRate: 2,
+            pointsAwarded: 2,
+            qualifyingBuyThreshold: 5000e18,
+            maxSellBps: 6000,
+            dailyLimitMultiplier: 100
+        });
+
+        stageConfig[UserStage.OG] = StageConfig({
+            burnAmount: 100e18,
+            upgradePointsThreshold: 500,
+            upgradeFuelThreshold: 30,
+            fuelRate: 3,
+            pointsAwarded: 3,
+            qualifyingBuyThreshold: 20000e18,
+            maxSellBps: 7000,
+            dailyLimitMultiplier: 100
+        });
+    }
     receive() external payable {}
 }

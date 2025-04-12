@@ -3992,6 +3992,7 @@ const deployedContracts = {
         buyTokens: "contracts/interfaces/IDGTokenVendor.sol",
         canChangeExchangeRate: "contracts/interfaces/IDGTokenVendor.sol",
         canChangeFeeRates: "contracts/interfaces/IDGTokenVendor.sol",
+        getExchangeRate: "contracts/interfaces/IDGTokenVendor.sol",
         getFeeConfig: "contracts/interfaces/IDGTokenVendor.sol",
         getFirstValidCollection: "contracts/interfaces/IDGTokenVendor.sol",
         getStageConfig: "contracts/interfaces/IDGTokenVendor.sol",
@@ -5204,6 +5205,2378 @@ const deployedContracts = {
         totalSupply: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         transfer: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         transferFrom: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      },
+    },
+  },
+  84532: {
+    DGToken: {
+      address: "0x9B7745e1EEaA50cF365C7dD607bC4881A9F18014",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "dev",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "initialSupply",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [],
+          name: "AccessControlBadConfirmation",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint48",
+              name: "schedule",
+              type: "uint48",
+            },
+          ],
+          name: "AccessControlEnforcedDefaultAdminDelay",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "AccessControlEnforcedDefaultAdminRules",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "defaultAdmin",
+              type: "address",
+            },
+          ],
+          name: "AccessControlInvalidDefaultAdmin",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              internalType: "bytes32",
+              name: "neededRole",
+              type: "bytes32",
+            },
+          ],
+          name: "AccessControlUnauthorizedAccount",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "allowance",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "needed",
+              type: "uint256",
+            },
+          ],
+          name: "ERC20InsufficientAllowance",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "balance",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "needed",
+              type: "uint256",
+            },
+          ],
+          name: "ERC20InsufficientBalance",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "approver",
+              type: "address",
+            },
+          ],
+          name: "ERC20InvalidApprover",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "receiver",
+              type: "address",
+            },
+          ],
+          name: "ERC20InvalidReceiver",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "ERC20InvalidSender",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+          ],
+          name: "ERC20InvalidSpender",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint8",
+              name: "bits",
+              type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "SafeCastOverflowedUintDowncast",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "Approval",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [],
+          name: "DefaultAdminDelayChangeCanceled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint48",
+              name: "newDelay",
+              type: "uint48",
+            },
+            {
+              indexed: false,
+              internalType: "uint48",
+              name: "effectSchedule",
+              type: "uint48",
+            },
+          ],
+          name: "DefaultAdminDelayChangeScheduled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [],
+          name: "DefaultAdminTransferCanceled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newAdmin",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint48",
+              name: "acceptSchedule",
+              type: "uint48",
+            },
+          ],
+          name: "DefaultAdminTransferScheduled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "previousAdminRole",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "newAdminRole",
+              type: "bytes32",
+            },
+          ],
+          name: "RoleAdminChanged",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleGranted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleRevoked",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "Transfer",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "BURNER_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "DEFAULT_ADMIN_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "ETH_RWANDA_ENS",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "ETH_RWANDA_FAUCET_MANAGER",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MINTER_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "OWNER_SUPPLY",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "P2E_INFERNO_ENS",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "acceptDefaultAdminTransfer",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+          ],
+          name: "allowance",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "approve",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "balanceOf",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newAdmin",
+              type: "address",
+            },
+          ],
+          name: "beginDefaultAdminTransfer",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "burnToken",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "cancelDefaultAdminTransfer",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint48",
+              name: "newDelay",
+              type: "uint48",
+            },
+          ],
+          name: "changeDefaultAdminDelay",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "decimals",
+          outputs: [
+            {
+              internalType: "uint8",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "defaultAdmin",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "defaultAdminDelay",
+          outputs: [
+            {
+              internalType: "uint48",
+              name: "",
+              type: "uint48",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "defaultAdminDelayIncreaseWait",
+          outputs: [
+            {
+              internalType: "uint48",
+              name: "",
+              type: "uint48",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+          ],
+          name: "getRoleAdmin",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "grantRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "hasRole",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "mintToken",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "name",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "pendingDefaultAdmin",
+          outputs: [
+            {
+              internalType: "address",
+              name: "newAdmin",
+              type: "address",
+            },
+            {
+              internalType: "uint48",
+              name: "schedule",
+              type: "uint48",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "pendingDefaultAdminDelay",
+          outputs: [
+            {
+              internalType: "uint48",
+              name: "newDelay",
+              type: "uint48",
+            },
+            {
+              internalType: "uint48",
+              name: "schedule",
+              type: "uint48",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "renounceRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "revokeRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "rollbackDefaultAdminDelay",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes4",
+              name: "interfaceId",
+              type: "bytes4",
+            },
+          ],
+          name: "supportsInterface",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "symbol",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalSupply",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "transfer",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "transferFrom",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
+    DGTokenVendor: {
+      address: "0x76197d3DF948425F27b5e66Bc330E21F12036077",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_baseToken",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "_swapToken",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_initialExchangeRate",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "_devAddress",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "target",
+              type: "address",
+            },
+          ],
+          name: "AddressEmptyCode",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "AddressInsufficientBalance",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "AppChangeCooldownStillActive",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "CollectionAddressNotFound",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "CollectionAlreadyAdded",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "DailySellLimitExceeded",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ETHTransferFailed",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EnforcedPause",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ExceedsMaxWhitelistedCollections",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ExpectedPause",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "FailedInnerCall",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "FeeCooldownActive",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InsufficientBalance",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InsufficientFuelForUpgrade",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InsufficientPointsForUpgrade",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidBurnAmount",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidCooldown",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidDailyLimitMultiplier",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidDevAddress",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidExchangeRate",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidFeeBPS",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidFuelRate",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidPointsAwarded",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidQualifyingBuyThreshold",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidUpgradeFuelThreshold",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidUpgradePointsThreshold",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "MaxStageReached",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "MinimumAmountNotMet",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoValidKeyForUserFound",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+          ],
+          name: "OwnableInvalidOwner",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "OwnableUnauthorizedAccount",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "RateCooldownActive",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ReentrancyGuardReentrantCall",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "token",
+              type: "address",
+            },
+          ],
+          name: "SafeERC20FailedOperation",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "StageCooldownActive",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "StageSellLimitExceeded",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "UnauthorizedCaller",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "WhitelistedCollectionsAlreadyInitialized",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newDevAddress",
+              type: "address",
+            },
+          ],
+          name: "DevAddressUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "ETHWithdrawn",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "newRate",
+              type: "uint256",
+            },
+          ],
+          name: "ExchangeRateUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "rateChangeCooldown",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "appChangeCooldown",
+              type: "uint256",
+            },
+          ],
+          name: "FeeConfigUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "newBuyFeeBPS",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "newSellFeeBPS",
+              type: "uint256",
+            },
+          ],
+          name: "FeeRatesUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "baseTokenFees",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "swapTokenFees",
+              type: "uint256",
+            },
+          ],
+          name: "FeesWithdrawn",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "burnAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "newFuel",
+              type: "uint256",
+            },
+          ],
+          name: "Lit",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "previousOwner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "Paused",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "enum IDGTokenVendor.UserStage",
+              name: "stage",
+              type: "uint8",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "burnAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradePointsThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradeFuelThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fuelRate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "pointsAwarded",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "qualifyingBuyThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxSellBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyLimitMultiplier",
+                  type: "uint256",
+                },
+              ],
+              indexed: false,
+              internalType: "struct IDGTokenVendor.StageConfig",
+              name: "oldConfig",
+              type: "tuple",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "burnAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradePointsThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradeFuelThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fuelRate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "pointsAwarded",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "qualifyingBuyThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxSellBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyLimitMultiplier",
+                  type: "uint256",
+                },
+              ],
+              indexed: false,
+              internalType: "struct IDGTokenVendor.StageConfig",
+              name: "newConfig",
+              type: "tuple",
+            },
+          ],
+          name: "StageConfigUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "string",
+              name: "parameter",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "StageConstantsUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "enum IDGTokenVendor.UserStage",
+              name: "newStage",
+              type: "uint8",
+            },
+          ],
+          name: "StageUpgraded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "buyer",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "baseTokenAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "swapTokenAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "fee",
+              type: "uint256",
+            },
+          ],
+          name: "TokensPurchased",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "seller",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "swapTokenAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "baseTokenAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "fee",
+              type: "uint256",
+            },
+          ],
+          name: "TokensSold",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "Unpaused",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "collectionAddress",
+              type: "address",
+            },
+          ],
+          name: "WhitelistedCollectionAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "collectionAddress",
+              type: "address",
+            },
+          ],
+          name: "WhitelistedCollectionRemoved",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "BASIS_POINTS",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "BURN_ADDRESS",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_DAILY_MULTIPLIER",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_FUEL_LIMIT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_FUEL_RATE",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_POINTS_AWARDED",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_SELL_BPS_LIMIT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_WHITELISTED_COLLECTIONS",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "collectionAddress",
+              type: "address",
+            },
+          ],
+          name: "addWhitelistedCollection",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address[]",
+              name: "collections",
+              type: "address[]",
+            },
+          ],
+          name: "batchAddWhitelistedCollections",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address[]",
+              name: "collections",
+              type: "address[]",
+            },
+          ],
+          name: "batchRemoveWhitelistedCollections",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "buyTokens",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "canChangeExchangeRate",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "canChangeFeeRates",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getExchangeRate",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getFeeConfig",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "maxFeeBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "buyFeeBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "sellFeeBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "rateChangeCooldown",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "appChangeCooldown",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.FeeConfig",
+              name: "_feeConfig",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+          ],
+          name: "getFirstValidCollection",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum IDGTokenVendor.UserStage",
+              name: "_stage",
+              type: "uint8",
+            },
+          ],
+          name: "getStageConfig",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "burnAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradePointsThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradeFuelThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fuelRate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "pointsAwarded",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "qualifyingBuyThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxSellBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyLimitMultiplier",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.StageConfig",
+              name: "_stageConfig",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getStageConstants",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "maxSellCooldown",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyWindow",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minBuyAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minSellAmount",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.StageConstants",
+              name: "_stageConstants",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getSystemState",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "baseTokenFees",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "swapTokenFees",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lastRateChangeTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lastFeeChangeTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "devAddress",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lastDevAddressChangeTimestamp",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.SystemState",
+              name: "_systemState",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getTokenConfig",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "contract IERC20",
+                  name: "baseToken",
+                  type: "address",
+                },
+                {
+                  internalType: "contract IERC20",
+                  name: "swapToken",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "exchangeRate",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.TokenConfig",
+              name: "_tokenConfig",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+          ],
+          name: "getUserState",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "enum IDGTokenVendor.UserStage",
+                  name: "stage",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint256",
+                  name: "points",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fuel",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lastStage3MaxSale",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailySoldAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyWindowStart",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.UserState",
+              name: "_userState",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getWhitelistedCollections",
+          outputs: [
+            {
+              internalType: "address[]",
+              name: "",
+              type: "address[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+          ],
+          name: "hasValidKey",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address[]",
+              name: "collections",
+              type: "address[]",
+            },
+          ],
+          name: "initializeWhitelistedCollections",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "lightUp",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "pause",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "paused",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "collectionAddress",
+              type: "address",
+            },
+          ],
+          name: "removeWhitelistedCollection",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "renounceOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "sellTokens",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_rateChangeCooldown",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_appChangeCooldown",
+              type: "uint256",
+            },
+          ],
+          name: "setCooldownConfig",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newDevAddress",
+              type: "address",
+            },
+          ],
+          name: "setDevAddress",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "newRate",
+              type: "uint256",
+            },
+          ],
+          name: "setExchangeRate",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "newBuyFeeBPS",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "newSellFeeBPS",
+              type: "uint256",
+            },
+          ],
+          name: "setFeeRates",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum IDGTokenVendor.UserStage",
+              name: "_stage",
+              type: "uint8",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "burnAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradePointsThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upgradeFuelThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fuelRate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "pointsAwarded",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "qualifyingBuyThreshold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxSellBps",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "dailyLimitMultiplier",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct IDGTokenVendor.StageConfig",
+              name: "_config",
+              type: "tuple",
+            },
+          ],
+          name: "setStageConfig",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "unpause",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "upgradeStage",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdrawETH",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdrawFees",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          stateMutability: "payable",
+          type: "receive",
+        },
+      ],
+      inheritedFunctions: {
+        owner: "@openzeppelin/contracts/access/Ownable.sol",
+        renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        paused: "@openzeppelin/contracts/utils/Pausable.sol",
+        BASIS_POINTS: "contracts/interfaces/IDGTokenVendor.sol",
+        BURN_ADDRESS: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_DAILY_MULTIPLIER: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_FUEL_LIMIT: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_FUEL_RATE: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_POINTS_AWARDED: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_SELL_BPS_LIMIT: "contracts/interfaces/IDGTokenVendor.sol",
+        MAX_WHITELISTED_COLLECTIONS: "contracts/interfaces/IDGTokenVendor.sol",
+        addWhitelistedCollection: "contracts/interfaces/IDGTokenVendor.sol",
+        batchAddWhitelistedCollections:
+          "contracts/interfaces/IDGTokenVendor.sol",
+        buyTokens: "contracts/interfaces/IDGTokenVendor.sol",
+        canChangeExchangeRate: "contracts/interfaces/IDGTokenVendor.sol",
+        canChangeFeeRates: "contracts/interfaces/IDGTokenVendor.sol",
+        getExchangeRate: "contracts/interfaces/IDGTokenVendor.sol",
+        getFeeConfig: "contracts/interfaces/IDGTokenVendor.sol",
+        getFirstValidCollection: "contracts/interfaces/IDGTokenVendor.sol",
+        getStageConfig: "contracts/interfaces/IDGTokenVendor.sol",
+        getStageConstants: "contracts/interfaces/IDGTokenVendor.sol",
+        getSystemState: "contracts/interfaces/IDGTokenVendor.sol",
+        getTokenConfig: "contracts/interfaces/IDGTokenVendor.sol",
+        getUserState: "contracts/interfaces/IDGTokenVendor.sol",
+        getWhitelistedCollections: "contracts/interfaces/IDGTokenVendor.sol",
+        hasValidKey: "contracts/interfaces/IDGTokenVendor.sol",
+        initializeWhitelistedCollections:
+          "contracts/interfaces/IDGTokenVendor.sol",
+        lightUp: "contracts/interfaces/IDGTokenVendor.sol",
+        removeWhitelistedCollection: "contracts/interfaces/IDGTokenVendor.sol",
+        sellTokens: "contracts/interfaces/IDGTokenVendor.sol",
+        setCooldownConfig: "contracts/interfaces/IDGTokenVendor.sol",
+        setDevAddress: "contracts/interfaces/IDGTokenVendor.sol",
+        setExchangeRate: "contracts/interfaces/IDGTokenVendor.sol",
+        setFeeRates: "contracts/interfaces/IDGTokenVendor.sol",
+        setStageConfig: "contracts/interfaces/IDGTokenVendor.sol",
+        upgradeStage: "contracts/interfaces/IDGTokenVendor.sol",
+        withdrawETH: "contracts/interfaces/IDGTokenVendor.sol",
+        withdrawFees: "contracts/interfaces/IDGTokenVendor.sol",
       },
     },
   },
