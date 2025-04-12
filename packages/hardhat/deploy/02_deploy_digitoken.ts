@@ -7,8 +7,8 @@ import { DeployFunction } from "hardhat-deploy/types";
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-export const ownerAddress = "0x23C93C4dD75b55944a58DF4cb345D0C9C6Ab5C4B"; // frontend address -- CHANGE BEFORE LIVE DEPLOYMENT
-export const devAddress = "0x23C93C4dD75b55944a58DF4cb345D0C9C6Ab5C4B"; // frontend address -- CHANGE BEFORE LIVE DEPLOYMENT
+export const ownerAddress = "0x306677D29De683a6907Bb2A666f8E206e062a689"; // Boxman address -- CHANGE BEFORE LIVE DEPLOYMENT
+export const devAddress = "0x306677D29De683a6907Bb2A666f8E206e062a689"; // Boxman address -- CHANGE BEFORE LIVE DEPLOYMENT
 
 const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*

@@ -24,12 +24,12 @@ const TokenVendor: NextPage = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
   const { data: upTokenName } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "name",
   });
 
@@ -44,11 +44,17 @@ const TokenVendor: NextPage = () => {
     args: [address],
   });
 
+  const { data: yourSwapTokenBalance } = useScaffoldReadContract({
+    contractName: "DAPPX",
+    functionName: "balanceOf",
+    args: [address],
+  });
+
   const { data: vendorContractData } = useDeployedContractInfo("DGTokenVendor");
   // const { data: unlockContractData } = useDeployedContractInfo("UnlockProtocolToken");
   const { writeContractAsync: writeVendorAsync } = useScaffoldWriteContract("DGTokenVendor");
   const { writeContractAsync: writeDGTokenAsync } = useScaffoldWriteContract("DGToken");
-  const { writeContractAsync: writeUnlockTokenAsync } = useScaffoldWriteContract("UnlockProtocolToken");
+  const { writeContractAsync: writeUnlockTokenAsync } = useScaffoldWriteContract("DAPPX");
 
   const { data: vendorDGTokenBalance } = useScaffoldReadContract({
     contractName: "DGToken",
@@ -56,8 +62,14 @@ const TokenVendor: NextPage = () => {
     args: [vendorContractData?.address],
   });
 
-  const { data: vendorUPTokenBalance } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+  // const { data: vendorUPTokenBalance } = useScaffoldReadContract({
+  //   contractName: "UnlockProtocolToken",
+  //   functionName: "balanceOf",
+  //   args: [vendorContractData?.address],
+  // });
+
+  const { data: dappxToken } = useScaffoldReadContract({
+    contractName: "DAPPX",
     functionName: "balanceOf",
     args: [vendorContractData?.address],
   });
@@ -66,18 +78,25 @@ const TokenVendor: NextPage = () => {
 
   const { data: exchangRate } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "exchangeRate",
+    functionName: "getExchangeRate",
   });
 
   return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
         <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
-          <div className="text-xl">
+          <div className="text-sm text-gray-700">
             Your {dgTokenName} balance:{" "}
-            <div className="inline-flex items-center justify-center">
+            <div className="inline-flex items-center justify-center font-bold">
               {parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(4)}
               <span className="font-bold ml-1">{dgTokenSymbol}</span>
+            </div>
+          </div>
+          <div className="text-sm text-yellow-900">
+            Your {upTokenName} balance:{" "}
+            <div className="inline-flex items-center justify-center font-bold">
+              {parseFloat(formatEther(yourSwapTokenBalance || 0n)).toFixed(4)}
+              <span className="font-bold ml-1">{upTokenSymbol}</span>
             </div>
           </div>
           {/* Vendor Balances */}
@@ -90,7 +109,7 @@ const TokenVendor: NextPage = () => {
             </div>
           </div>
           <div>
-            Vendor {upTokenName} balance: {Number(formatEther(vendorUPTokenBalance || 0n)).toFixed(4)}
+            Vendor {upTokenName} balance: {Number(formatEther(dappxToken || 0n)).toFixed(4)}
             <span className="font-bold ml-1">{upTokenSymbol}</span>
           </div>
         </div>
@@ -99,7 +118,7 @@ const TokenVendor: NextPage = () => {
         <div className="flex flex-col items-center space-y-4 bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-8 w-full max-w-lg">
           <div className="text-xl">Buy {dgTokenName}s</div>
           <div>
-            {exchangRate?.toString() || 0} {dgTokenSymbol} per {upTokenSymbol}
+            {Number(exchangRate || 0n)} {dgTokenSymbol} per {upTokenSymbol}
           </div>
 
           <div className="w-full flex flex-col space-y-2">
@@ -182,7 +201,7 @@ const TokenVendor: NextPage = () => {
           <div className="flex flex-col items-center space-y-4 bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-8 w-full max-w-lg">
             <div className="text-xl">Sell {dgTokenName}s</div>
             <div>
-              {exchangRate?.toString() || 0} {dgTokenSymbol} per {upTokenSymbol} minus fees
+              {1 / Number(exchangRate || 0n)} {upTokenSymbol} per {dgTokenSymbol} (excluding fees)
             </div>
 
             <div className="w-full flex flex-col space-y-2">
