@@ -564,8 +564,8 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         });
 
         stageConfig[UserStage.HUSTLER] = StageConfig({
-            burnAmount: 50e18,
-            upgradePointsThreshold: 100,
+            burnAmount: 100e18,
+            upgradePointsThreshold: 50,
             upgradeFuelThreshold: 10,
             fuelRate: 2,
             pointsAwarded: 2,
@@ -575,11 +575,11 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         });
 
         stageConfig[UserStage.OG] = StageConfig({
-            burnAmount: 100e18,
+            burnAmount: 500e18,
             upgradePointsThreshold: 500,
-            upgradeFuelThreshold: 30,
-            fuelRate: 3,
-            pointsAwarded: 3,
+            upgradeFuelThreshold: 50,
+            fuelRate: 5,
+            pointsAwarded: 5,
             qualifyingBuyThreshold: 20000e18,
             maxSellBps: 7000,
             dailyLimitMultiplier: 100

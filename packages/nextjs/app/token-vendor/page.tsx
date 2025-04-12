@@ -165,7 +165,7 @@ const TokenVendor: NextPage = () => {
           </div>
         </div>
 
-        {!!yourDGTokenBalance && (
+        {/* {!!yourDGTokenBalance && (
           <div className="flex flex-col items-center space-y-4 bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-8 w-full max-w-lg">
             <div className="text-xl">Transfer tokens</div>
             <div className="w-full flex flex-col space-y-2">
@@ -194,7 +194,7 @@ const TokenVendor: NextPage = () => {
               Send Tokens
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Sell Tokens */}
         {!!yourDGTokenBalance && (

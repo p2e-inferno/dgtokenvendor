@@ -5210,7 +5210,7 @@ const deployedContracts = {
   },
   84532: {
     DGToken: {
-      address: "0x9B7745e1EEaA50cF365C7dD607bC4881A9F18014",
+      address: "0xf7193B58f24300dbA84d12D6768dB5902D7AB483",
       abi: [
         {
           inputs: [
@@ -6112,7 +6112,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     DGTokenVendor: {
-      address: "0x76197d3DF948425F27b5e66Bc330E21F12036077",
+      address: "0x45adA67dc9a5fb49c5f1A88f0ff83fb0550b3A82",
       abi: [
         {
           inputs: [

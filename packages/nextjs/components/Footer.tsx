@@ -51,7 +51,7 @@ export const Footer = () => {
                 Fork me
               </a>
             </div>
-            <span>·</span>
+            {/* <span>·</span>
             <div className="flex justify-center items-center gap-2">
               <p className="m-0 text-center">
                 Built with <HeartIcon className="inline-block h-4 w-4" /> at
@@ -71,7 +71,7 @@ export const Footer = () => {
               <a href="https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA" target="_blank" rel="noreferrer" className="link">
                 Support
               </a>
-            </div>
+            </div> */}
           </div>
         </ul>
       </div>
