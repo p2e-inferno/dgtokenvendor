@@ -6,28 +6,33 @@ import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
 
 const Events: NextPage = () => {
-  // BuyTokens Events
-  const { data: buyTokenEvents, isLoading: isBuyEventsLoading } = useScaffoldEventHistory({
-    contractName: "Vendor",
-    eventName: "BuyTokens",
+  // Token Transfer Events for DG Token
+  const { data: dgTokenTransferEvents, isLoading: isDgTokenEventsLoading } = useScaffoldEventHistory({
+    contractName: "DGToken" as const,
+    eventName: "Transfer" as const,
     fromBlock: 0n,
   });
 
-  // // SellTokens Events
-  // const { data: sellTokenEvents, isLoading: isSellEventsLoading } = useScaffoldEventHistory({
-  //   contractName: "Vendor",
-  //   eventName: "SellTokens",
-  //   fromBlock: 0n,
-  // });
+  // Token Transfer Events for UP Token
+  const { data: upTokenTransferEvents, isLoading: isUpTokenEventsLoading } = useScaffoldEventHistory({
+    contractName: "UnlockProtocolToken" as const,
+    eventName: "Transfer" as const,
+    fromBlock: 0n,
+  });
 
   return (
     <div className="flex items-center flex-col flex-grow pt-10">
-      {/* BuyTokens Events */}
-      <div>
+      <div className="text-center mb-8 max-w-2xl">
+        <h1 className="text-4xl font-bold text-primary mb-4">Token Events</h1>
+        <p className="text-base-content/70 text-lg">View the history of token transfers on the blockchain.</p>
+      </div>
+
+      {/* DG Token Transfer Events */}
+      <div className="w-full max-w-6xl mb-12">
         <div className="text-center mb-4">
-          <span className="block text-2xl font-bold">Buy Token Events</span>
+          <span className="block text-2xl font-bold text-secondary">DG Token Transfers</span>
         </div>
-        {isBuyEventsLoading ? (
+        {isDgTokenEventsLoading ? (
           <div className="flex justify-center items-center mt-8">
             <span className="loading loading-spinner loading-lg"></span>
           </div>
@@ -36,27 +41,30 @@ const Events: NextPage = () => {
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th className="bg-primary">Buyer</th>
-                  <th className="bg-primary">Amount of Tokens</th>
-                  <th className="bg-primary">Amount of ETH</th>
+                  <th className="bg-secondary text-secondary-content">From</th>
+                  <th className="bg-secondary text-secondary-content">To</th>
+                  <th className="bg-secondary text-secondary-content">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {!buyTokenEvents || buyTokenEvents.length === 0 ? (
+                {!dgTokenTransferEvents || dgTokenTransferEvents.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="text-center">
                       No events found
                     </td>
                   </tr>
                 ) : (
-                  buyTokenEvents?.map((event, index) => {
+                  dgTokenTransferEvents?.map((event: any, index: number) => {
+                    const { from, to, value } = event.args || { from: "", to: "", value: 0n };
                     return (
                       <tr key={index}>
                         <td className="text-center">
-                          <Address address={event.args.buyer} />
+                          <Address address={from || ""} />
                         </td>
-                        <td>{formatEther(event.args?.amountOfTokens || 0n)}</td>
-                        <td>{formatEther(event.args?.amountOfETH || 0n)}</td>
+                        <td className="text-center">
+                          <Address address={to || ""} />
+                        </td>
+                        <td>{value ? formatEther(value) : "0"}</td>
                       </tr>
                     );
                   })
@@ -67,12 +75,12 @@ const Events: NextPage = () => {
         )}
       </div>
 
-      {/* SellTokens Events */}
-      {/* <div className="mt-14">
+      {/* UP Token Transfer Events */}
+      <div className="w-full max-w-6xl">
         <div className="text-center mb-4">
-          <span className="block text-2xl font-bold">Sell Token Events</span>
+          <span className="block text-2xl font-bold text-primary">UP Token Transfers</span>
         </div>
-        {isSellEventsLoading ? (
+        {isUpTokenEventsLoading ? (
           <div className="flex justify-center items-center mt-8">
             <span className="loading loading-spinner loading-lg"></span>
           </div>
@@ -81,27 +89,30 @@ const Events: NextPage = () => {
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th className="bg-primary">Seller</th>
-                  <th className="bg-primary">Amount of Tokens</th>
-                  <th className="bg-primary">Amount of ETH</th>
+                  <th className="bg-primary text-primary-content">From</th>
+                  <th className="bg-primary text-primary-content">To</th>
+                  <th className="bg-primary text-primary-content">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {!sellTokenEvents || sellTokenEvents.length === 0 ? (
+                {!upTokenTransferEvents || upTokenTransferEvents.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="text-center">
                       No events found
                     </td>
                   </tr>
                 ) : (
-                  sellTokenEvents?.map((event, index) => {
+                  upTokenTransferEvents?.map((event: any, index: number) => {
+                    const { from, to, value } = event.args || { from: "", to: "", value: 0n };
                     return (
                       <tr key={index}>
                         <td className="text-center">
-                          <Address address={event.args.seller} />
+                          <Address address={from || ""} />
                         </td>
-                        <td>{formatEther(event.args?.amountOfTokens || 0n)}</td>
-                        <td>{formatEther(event.args?.amountOfETH || 0n)}</td>
+                        <td className="text-center">
+                          <Address address={to || ""} />
+                        </td>
+                        <td>{value ? formatEther(value) : "0"}</td>
                       </tr>
                     );
                   })
@@ -110,7 +121,7 @@ const Events: NextPage = () => {
             </table>
           </div>
         )}
-      </div> */}
+      </div>
     </div>
   );
 };

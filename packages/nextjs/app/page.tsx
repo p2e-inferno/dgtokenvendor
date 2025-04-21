@@ -1,91 +1,102 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { BugAntIcon, CurrencyDollarIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+  const { address } = useAccount();
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-            <span className="block text-xl font-bold">(SpeedRunEthereum Challenge #2 extension)</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
+    <div className="container mx-auto px-4 pt-10 pb-16">
+      <div className="flex flex-col items-center">
+        <div className="text-center mb-12 max-w-2xl">
+          <h1 className="text-5xl font-bold text-primary mb-4">DG Token Vendor</h1>
+          <p className="text-lg text-base-content/70">
+            Buy, sell, and manage digital game tokens using our secure token vendor platform. Connect your wallet to get
+            started!
+          </p>
+        </div>
 
-          <div className="flex items-center flex-col flex-grow pt-10">
-            <div className="px-5">
-              <h1 className="text-center mb-6">
-                <span className="block text-2xl mb-2">SpeedRunEthereum</span>
-                <span className="block text-4xl font-bold">Challenge #2: 🏵 Token Vendor 🤖</span>
-              </h1>
-              <div className="flex flex-col items-center justify-center">
-                <Image
-                  src="/hero.png"
-                  width="727"
-                  height="231"
-                  alt="challenge banner"
-                  className="rounded-xl border-4 border-primary"
-                />
-                <div className="max-w-3xl">
-                  <p className="text-center text-lg mt-8">
-                    🤖 Smart contracts are kind of like &quot;always on&quot; vending machines that anyone can access.
-                    Let&apos;s make a decentralized, digital currency. Then, let&apos;s build an unstoppable vending
-                    machine that will buy and sell the currency. We&apos;ll learn about the &quot;approve&quot; pattern
-                    for ERC20s and how contract to contract interactions work.
-                  </p>
-                  <p className="text-center text-lg">
-                    🌟 The final deliverable is an app that lets users purchase your ERC20 token, transfer it, and sell
-                    it back to the vendor. Deploy your contracts on your public chain of choice and then deploy your app
-                    to a public webserver. Submit the url on{" "}
-                    <a href="https://speedrunethereum.com/" target="_blank" rel="noreferrer" className="underline">
-                      SpeedRunEthereum.com
-                    </a>{" "}
-                    !
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl mb-12">
+          {/* Token Vendor Card */}
+          <Link
+            href="/token-vendor"
+            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-primary/20 hover:border-primary/50"
+          >
+            <div className="card-body">
+              <div className="flex justify-between items-start">
+                <h2 className="card-title text-primary">Token Vendor</h2>
+                <CurrencyDollarIcon className="h-8 w-8 text-primary" />
+              </div>
+              <p className="text-base-content/70">
+                Buy and sell digital tokens at competitive rates. Exchange your Unlock Protocol tokens for DG tokens.
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary btn-sm">Visit Vendor</button>
+              </div>
+            </div>
+          </Link>
+
+          {/* User Profile Card */}
+          <Link
+            href="/profile"
+            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-accent/20 hover:border-accent/50"
+          >
+            <div className="card-body">
+              <div className="flex justify-between items-start">
+                <h2 className="card-title text-accent">User Profile</h2>
+                <UserCircleIcon className="h-8 w-8 text-accent" />
+              </div>
+              <p className="text-base-content/70">
+                View your game profile, token balances, and transaction history. Check your verification status.
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-accent btn-sm">View Profile</button>
+              </div>
+            </div>
+          </Link>
+
+          {/* Debug Card */}
+          <Link
+            href="/debug"
+            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-secondary/20 hover:border-secondary/50"
+          >
+            <div className="card-body">
+              <div className="flex justify-between items-start">
+                <h2 className="card-title text-secondary">Debug Contracts</h2>
+                <BugAntIcon className="h-8 w-8 text-secondary" />
+              </div>
+              <p className="text-base-content/70">
+                Explore and debug smart contracts. Test functionalities and analyze internal operations.
+              </p>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-secondary btn-sm">Debug</button>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {address ? (
+          <div className="alert alert-info max-w-lg shadow-lg">
+            <div>
+              <h3 className="font-bold">Connected!</h3>
+              <div className="text-sm">
+                You&apos;re now connected to the DG Token Vendor. Explore the platform using the navigation above.
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+        ) : (
+          <div className="alert alert-warning max-w-lg shadow-lg">
+            <div>
+              <h3 className="font-bold">Connect Wallet</h3>
+              <div className="text-sm">Connect your wallet using the button in the header to access all features.</div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 
