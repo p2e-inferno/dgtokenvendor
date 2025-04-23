@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
-import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { notifyError, notifySuccess } from "~~/utils/notification";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useTokenTransaction } from "~~/hooks/useTokenTransaction";
 import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
+import { calculateTokenConversion } from "~~/utils/token-vendor/calculations";
 
 export const BuyTokens = () => {
   const [tokensToBuy, setTokensToBuy] = useState<string>("");
-  const [isUPTokenApproved, setIsUPTokenApproved] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
@@ -32,50 +31,31 @@ export const BuyTokens = () => {
 
   const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
 
-  const { data: vendorContractData } = useDeployedContractInfo("DGTokenVendor");
-  const { writeContractAsync: writeVendorAsync } = useScaffoldWriteContract("DGTokenVendor");
-  const { writeContractAsync: writeDAPPXAsync } = useScaffoldWriteContract("DAPPX");
+  const { isApproved, isApprovalLoading, isTransactionLoading, handleApprove, handleTransaction } = useTokenTransaction(
+    {
+      tokenContractName: "DAPPX",
+      vendorContractName: "DGTokenVendor",
+      tokenSymbol: (upTokenSymbol as string) || "DAPPX",
+    },
+  );
 
   const handleApproveTokens = async () => {
-    if (!tokensToBuy || !vendorContractData?.address) return;
-
-    setIsLoading(true);
-    try {
-      await writeDAPPXAsync({
-        functionName: "approve",
-        args: [vendorContractData.address, multiplyTo1e18(tokensToBuy)],
-      });
-      setIsUPTokenApproved(true);
-      notifySuccess("Tokens approved successfully!");
-    } catch (err) {
-      console.error("Error approving tokens:", err);
-      notifyError(err);
-      setIsUPTokenApproved(false);
-    } finally {
-      setIsLoading(false);
+    if (tokensToBuy) {
+      await handleApprove(tokensToBuy);
     }
   };
 
   const handleBuyTokens = async () => {
-    if (!tokensToBuy) return;
-
-    setIsLoading(true);
-    try {
-      await writeVendorAsync({
-        functionName: "buyTokens",
-        args: [multiplyTo1e18(tokensToBuy)],
-      });
-      notifySuccess(`Successfully purchased ${tokensToBuy} ${dgTokenSymbol}!`);
-      // Reset form after successful purchase
-      setTokensToBuy("");
-      setIsUPTokenApproved(false);
-    } catch (err) {
-      console.error("Error buying tokens:", err);
-      notifyError(err);
-    } finally {
-      setIsLoading(false);
+    if (tokensToBuy) {
+      const success = await handleTransaction("buy", tokensToBuy);
+      if (success) {
+        setTokensToBuy("");
+      }
     }
   };
+
+  // Input is disabled if either approval or transaction is in progress
+  const isInputDisabled = isApprovalLoading || isTransactionLoading;
 
   return (
     <div className="card bg-base-100 shadow-xl border border-primary/20">
@@ -106,7 +86,7 @@ export const BuyTokens = () => {
             value={tokensToBuy}
             onChange={setTokensToBuy}
             placeholder={`Enter amount of ${upTokenSymbol}`}
-            disabled={isLoading}
+            disabled={isInputDisabled}
             disableMultiplyBy1e18
           />
           {tokensToBuy && (
@@ -114,7 +94,7 @@ export const BuyTokens = () => {
               <span className="label-text-alt">
                 You&apos;ll receive approximately{" "}
                 <span className="font-semibold">
-                  {Number(tokensToBuy) * Number(exchangeRate || 0)} {dgTokenSymbol}
+                  {calculateTokenConversion("buy", tokensToBuy, exchangeRate, feeConfig)} {dgTokenSymbol}
                 </span>
               </span>
             </label>
@@ -123,17 +103,17 @@ export const BuyTokens = () => {
 
         <div className="card-actions justify-end">
           <button
-            className={`btn ${isUPTokenApproved ? "btn-disabled" : "btn-secondary"} ${isLoading ? "loading" : ""}`}
+            className={`btn ${isApproved ? "btn-disabled" : "btn-secondary"} ${isApprovalLoading ? "loading" : ""}`}
             onClick={handleApproveTokens}
-            disabled={isUPTokenApproved || !tokensToBuy || isLoading}
+            disabled={isApproved || !tokensToBuy || isInputDisabled}
           >
             Approve {upTokenSymbol}
           </button>
 
           <button
-            className={`btn btn-primary ${isLoading ? "loading" : ""}`}
+            className={`btn btn-primary ${isTransactionLoading ? "loading" : ""}`}
             onClick={handleBuyTokens}
-            disabled={!isUPTokenApproved || !tokensToBuy || isLoading}
+            disabled={!isApproved || !tokensToBuy || isInputDisabled}
           >
             Buy Tokens
           </button>

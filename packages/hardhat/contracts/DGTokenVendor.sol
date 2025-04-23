@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IDGTokenVendor.sol";
 
-// Custom errors
 error AppChangeCooldownStillActive();
 error CollectionAddressNotFound();
 error CollectionAlreadyAdded();
@@ -123,7 +122,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             dailyWindow: 24 hours,
             minBuyAmount: 1000e18,
             minSellAmount: 5000e18
-        }); 
+        });
 
         stageConfig[UserStage.PLEB] = StageConfig({
             burnAmount: 10e18,
@@ -254,7 +253,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
 
     function upgradeStage() external onlyNFTHolder whenNotPaused nonReentrant {
         UserState storage user = userStates[msg.sender];
-        if (user.stage == UserStage.OG) revert MaxStageReached(); 
+        if (user.stage == UserStage.OG) revert MaxStageReached();
         UserStage nextStage = UserStage(uint256(user.stage) + 1);
 
         if (user.points < stageConfig[nextStage].upgradePointsThreshold) revert InsufficientPointsForUpgrade();
@@ -357,15 +356,13 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         emit WhitelistedCollectionRemoved(collectionAddress);
     }
 
-    function batchRemoveWhitelistedCollections(
-        address[] calldata collections
-    ) external onlyOwner {
+    function batchRemoveWhitelistedCollections(address[] calldata collections) external onlyOwner {
         uint256 length = collections.length;
         for (uint256 i = length; i > 0; ) {
             unchecked {
-                i--; 
+                i--;
             }
-            
+
             address collection = collections[i];
             uint256 index = _findCollectionIndex(collection);
             if (index >= whitelistedCollections.length) {
@@ -517,7 +514,13 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         feeConfig.appChangeCooldown = _appChangeCooldown;
         emit FeeConfigUpdated(_rateChangeCooldown, _appChangeCooldown);
     }
-    function _initialize(address _baseToken, address _swapToken, uint256 _initialExchangeRate, address _devAddress) private {
+
+    function _initialize(
+        address _baseToken,
+        address _swapToken,
+        uint256 _initialExchangeRate,
+        address _devAddress
+    ) private {
         // Initialize token config
         tokenConfig = TokenConfig({
             baseToken: IERC20(_baseToken),
@@ -550,7 +553,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             dailyWindow: 24 hours,
             minBuyAmount: 1000e18,
             minSellAmount: 5000e18
-        }); 
+        });
 
         // Configure stages
         stageConfig[UserStage.PLEB] = StageConfig({
@@ -586,5 +589,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             dailyLimitMultiplier: 100
         });
     }
+
     receive() external payable {}
 }

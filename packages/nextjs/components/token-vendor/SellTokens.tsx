@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import { formatEther } from "viem";
-import { useAccount } from "wagmi";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
-import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { notifyError, notifySuccess } from "~~/utils/notification";
-import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useTokenTransaction } from "~~/hooks/useTokenTransaction";
+import { calculateTokenConversion } from "~~/utils/token-vendor/calculations";
 
 export const SellTokens = () => {
   const [tokensToSell, setTokensToSell] = useState<string>("");
-  const [isDGTokenApproved, setIsDGTokenApproved] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { address } = useAccount();
 
   const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
@@ -34,70 +28,31 @@ export const SellTokens = () => {
     functionName: "getFeeConfig",
   });
 
-  const { data: vendorContractData } = useDeployedContractInfo("DGTokenVendor");
-  const { writeContractAsync: writeVendorAsync } = useScaffoldWriteContract("DGTokenVendor");
-  const { writeContractAsync: writeDGTokenAsync } = useScaffoldWriteContract("DGToken");
-
-  // Get exchange rate as a string
-  const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
-
-  // Calculate return amount based on exchange rate and sell fee
-  const calculateReturn = (amount: string) => {
-    if (!amount || !exchangeRate || !feeConfig) return "0";
-
-    const sellAmount = Number(amount);
-    const rate = Number(exchangeRate);
-    const fee = Number(feeConfig.sellFeeBps) / 10000; // Convert basis points to percentage
-
-    if (sellAmount <= 0 || rate <= 0) return "0";
-
-    const tokenAmount = sellAmount / rate;
-    const feeAmount = tokenAmount * fee;
-    const netReturn = tokenAmount - feeAmount;
-
-    return netReturn.toFixed(6);
-  };
+  const { isApproved, isApprovalLoading, isTransactionLoading, handleApprove, handleTransaction } = useTokenTransaction(
+    {
+      tokenContractName: "DGToken",
+      vendorContractName: "DGTokenVendor",
+      tokenSymbol: (dgTokenSymbol as string) || "DGToken",
+    },
+  );
 
   const handleApproveTokens = async () => {
-    if (!tokensToSell || !vendorContractData?.address) return;
-
-    setIsLoading(true);
-    try {
-      await writeDGTokenAsync({
-        functionName: "approve",
-        args: [vendorContractData.address, multiplyTo1e18(tokensToSell)],
-      });
-      setIsDGTokenApproved(true);
-      notifySuccess("Tokens approved successfully!");
-    } catch (err) {
-      console.error("Error approving tokens:", err);
-      notifyError(err);
-      setIsDGTokenApproved(false);
-    } finally {
-      setIsLoading(false);
+    if (tokensToSell) {
+      await handleApprove(tokensToSell);
     }
   };
 
   const handleSellTokens = async () => {
-    if (!tokensToSell) return;
-
-    setIsLoading(true);
-    try {
-      await writeVendorAsync({
-        functionName: "sellTokens",
-        args: [multiplyTo1e18(tokensToSell)],
-      });
-      notifySuccess(`Successfully sold ${tokensToSell} ${dgTokenSymbol}!`);
-      // Reset form after successful sale
-      setTokensToSell("");
-      setIsDGTokenApproved(false);
-    } catch (err) {
-      console.error("Error selling tokens:", err);
-      notifyError(err);
-    } finally {
-      setIsLoading(false);
+    if (tokensToSell) {
+      const success = await handleTransaction("sell", tokensToSell);
+      if (success) {
+        setTokensToSell("");
+      }
     }
   };
+
+  // Input is disabled if either approval or transaction is in progress
+  const isInputDisabled = isApprovalLoading || isTransactionLoading;
 
   return (
     <div className="card bg-base-100 shadow-xl border border-secondary/20">
@@ -128,7 +83,7 @@ export const SellTokens = () => {
             value={tokensToSell}
             onChange={setTokensToSell}
             placeholder={`Enter amount of ${dgTokenSymbol}`}
-            disabled={isLoading}
+            disabled={isInputDisabled}
             disableMultiplyBy1e18
           />
           {tokensToSell && (
@@ -136,7 +91,7 @@ export const SellTokens = () => {
               <span className="label-text-alt">
                 You&apos;ll receive approximately{" "}
                 <span className="font-semibold">
-                  {calculateReturn(tokensToSell)} {upTokenSymbol}
+                  {calculateTokenConversion("sell", tokensToSell, exchangeRate, feeConfig)} {upTokenSymbol}
                 </span>
               </span>
             </label>
@@ -145,17 +100,17 @@ export const SellTokens = () => {
 
         <div className="card-actions justify-end">
           <button
-            className={`btn ${isDGTokenApproved ? "btn-disabled" : "btn-accent"} ${isLoading ? "loading" : ""}`}
+            className={`btn ${isApproved ? "btn-disabled" : "btn-accent"} ${isApprovalLoading ? "loading" : ""}`}
             onClick={handleApproveTokens}
-            disabled={isDGTokenApproved || !tokensToSell || isLoading}
+            disabled={isApproved || !tokensToSell || isInputDisabled}
           >
             Approve {dgTokenSymbol}
           </button>
 
           <button
-            className={`btn btn-secondary ${isLoading ? "loading" : ""}`}
+            className={`btn btn-secondary ${isTransactionLoading ? "loading" : ""}`}
             onClick={handleSellTokens}
-            disabled={!isDGTokenApproved || !tokensToSell || isLoading}
+            disabled={!isApproved || !tokensToSell || isInputDisabled}
           >
             Sell Tokens
           </button>

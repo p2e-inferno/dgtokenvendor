@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import type { NextPage } from "next";
-import { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { ArrowPathIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { BuyTokens } from "~~/components/token-vendor/BuyTokens";
@@ -38,8 +37,6 @@ const TokenVendor: NextPage = () => {
 
   return (
     <div className="container mx-auto px-4 pt-10 pb-16">
-      <Toaster />
-
       <div className="flex flex-col items-center">
         <div className="text-center mb-8 max-w-2xl">
           <h1 className="text-4xl font-bold text-primary mb-4">DGToken Vendor</h1>

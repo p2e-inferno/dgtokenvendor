@@ -10,7 +10,7 @@ export const VendorInfo = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
@@ -20,7 +20,7 @@ export const VendorInfo = () => {
   });
 
   const { data: upTokenName } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "name",
   });
 
@@ -33,38 +33,34 @@ export const VendorInfo = () => {
   });
 
   const { data: vendorUPTokenBalance } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "balanceOf",
     args: [vendorContractData?.address],
   });
 
-  const { data: buyFeeBPS } = useScaffoldReadContract({
+  const { data: feeConfig } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "buyFeeBPS",
+    functionName: "getFeeConfig",
   });
 
-  const { data: sellFeeBPS } = useScaffoldReadContract({
-    contractName: "DGTokenVendor",
-    functionName: "sellFeeBPS",
-  });
 
   const { data: exchangeRate } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "exchangeRate",
+    functionName: "getExchangeRate",
   });
 
   // Get exchange rate as a string
   const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
 
-  const { data: baseTokenFees } = useScaffoldReadContract({
+  const { data: systemState } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "baseTokenFees",
+    functionName: "getSystemState",
   });
 
-  const { data: swapTokenFees } = useScaffoldReadContract({
-    contractName: "DGTokenVendor",
-    functionName: "swapTokenFees",
-  });
+  // const { data: swapTokenFees } = useScaffoldReadContract({
+  //   contractName: "DGTokenVendor",
+  //   functionName: "swapTokenFees",
+  // });
 
   return (
     <div className="card bg-base-100 shadow-xl">
@@ -101,17 +97,17 @@ export const VendorInfo = () => {
 
           <div>
             <h3 className="font-bold text-lg">Fees</h3>
-            <div>Buy Fee: {buyFeeBPS ? (Number(buyFeeBPS) / 100).toFixed(2) : "0"}%</div>
-            <div>Sell Fee: {sellFeeBPS ? (Number(sellFeeBPS) / 100).toFixed(2) : "0"}%</div>
+            <div>Buy Fee: {feeConfig ? (Number(feeConfig.buyFeeBps) / 100).toFixed(2) : "0"}%</div>
+            <div>Sell Fee: {feeConfig ? (Number(feeConfig.sellFeeBps) / 100).toFixed(2) : "0"}%</div>
           </div>
 
           <div>
             <h3 className="font-bold text-lg">Collected Fees</h3>
             <div>
-              {Number(formatEther(baseTokenFees || 0n)).toFixed(4)} {upTokenSymbol}
+              {Number(formatEther(systemState?.baseTokenFees || 0n)).toFixed(4)} {upTokenSymbol}
             </div>
             <div>
-              {Number(formatEther(swapTokenFees || 0n)).toFixed(4)} {dgTokenSymbol}
+              {Number(formatEther(systemState?.swapTokenFees || 0n)).toFixed(4)} {dgTokenSymbol}
             </div>
           </div>
 
