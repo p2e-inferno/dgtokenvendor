@@ -27,7 +27,7 @@ const Home: NextPage = () => {
           >
             <div className="card-body">
               <div className="flex justify-between items-start">
-                <h2 className="card-title text-primary">Token Vendor</h2>
+                <h2 className="card-title text-primary">DGToken Vendor</h2>
                 <CurrencyDollarIcon className="h-8 w-8 text-primary" />
               </div>
               <p className="text-base-content/70">

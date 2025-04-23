@@ -113,65 +113,54 @@ export const UserProfile = () => {
               <h3 className="text-xl font-bold mb-4">Game Statistics</h3>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-base-100 p-4 rounded-lg">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
                   <div className="stat-title">Fuel Level</div>
-                  <div
-                    className="radial-progress"
-                    style={{ "--value": 75, "--size": "5rem" } as any}
-                    role="progressbar"
-                  >
-                    75%
+                  <div className="flex-grow flex flex-col items-start justify-center py-2">
+                    <div
+                      className="radial-progress text-primary"
+                      style={{ "--value": 75, "--size": "4rem", "--thickness": "4px" } as any}
+                      role="progressbar"
+                    >
+                      75%
+                    </div>
                   </div>
-                  <div className="stat-desc mt-2">Energy remaining for transactions</div>
+                  <div className="stat-desc mt-2 whitespace-normal">Energy remaining for transactions</div>
                 </div>
 
-                <div className="bg-base-100 p-4 rounded-lg">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
                   <div className="stat-title">Points</div>
-                  <div className="text-2xl font-bold text-accent">1,250</div>
-                  <div className="stat-desc mt-2">Earned through transactions</div>
-                </div>
-
-                <div className="bg-base-100 p-4 rounded-lg">
-                  <div className="stat-title">Stage</div>
-                  <div className="text-2xl font-bold text-secondary">Level 3</div>
-                  <div className="stat-desc mt-2">Intermediate Trader</div>
-                </div>
-
-                <div className="bg-base-100 p-4 rounded-lg">
-                  <div className="stat-title">Reputation</div>
-                  <div className="rating rating-md">
-                    <input
-                      type="radio"
-                      name="rating-7"
-                      className="mask mask-star-2 bg-orange-400"
-                      defaultChecked={true}
-                    />
-                    <input
-                      type="radio"
-                      name="rating-7"
-                      className="mask mask-star-2 bg-orange-400"
-                      defaultChecked={true}
-                    />
-                    <input
-                      type="radio"
-                      name="rating-7"
-                      className="mask mask-star-2 bg-orange-400"
-                      defaultChecked={true}
-                    />
-                    <input
-                      type="radio"
-                      name="rating-7"
-                      className="mask mask-star-2 bg-orange-400"
-                      defaultChecked={false}
-                    />
-                    <input
-                      type="radio"
-                      name="rating-7"
-                      className="mask mask-star-2 bg-orange-400"
-                      defaultChecked={false}
-                    />
+                  <div className="flex-grow flex items-start justify-start">
+                    <div className="text-3xl font-bold text-accent">1,250</div>
                   </div>
-                  <div className="stat-desc mt-2">Based on transaction history</div>
+                  <div className="stat-desc mt-2 whitespace-normal">Earned through transactions</div>
+                </div>
+
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                  <div className="stat-title">Stage</div>
+                  <div className="flex-grow flex items-start justify-start">
+                    <div className="text-2xl font-bold text-secondary">Level 3</div>
+                  </div>
+                  <div className="stat-desc mt-2 whitespace-normal">Intermediate Trader</div>
+                </div>
+
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                  <div className="stat-title">Reputation</div>
+                  <div className="flex-grow flex items-start justify-start py-2">
+                    <div className="rating rating-md">
+                      {[...Array(5)].map((_, i) => (
+                        <input
+                          key={i}
+                          type="radio"
+                          name="rating-7"
+                          className={`mask mask-star-2 ${i < 3 ? "bg-orange-400" : "bg-base-300"}`}
+                          checked={i < 3}
+                          readOnly
+                          disabled
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="stat-desc mt-2 whitespace-normal">Based on transaction history</div>
                 </div>
               </div>
             </div>

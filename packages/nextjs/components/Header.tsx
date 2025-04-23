@@ -106,7 +106,7 @@ export const Header = () => {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight text-primary">Token Vendor</span>
+            <span className="font-bold leading-tight text-primary">DGToken Vendor</span>
             <span className="text-xs">Swap your tokens</span>
           </div>
         </Link>
