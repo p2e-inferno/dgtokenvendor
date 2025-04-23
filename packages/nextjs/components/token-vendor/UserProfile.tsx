@@ -14,7 +14,7 @@ export const UserProfile = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
@@ -25,7 +25,7 @@ export const UserProfile = () => {
   });
 
   const { data: yourUPTokenBalance } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "balanceOf",
     args: [address],
   });
@@ -38,7 +38,7 @@ export const UserProfile = () => {
 
   const { data: keyCollection } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "getFirstValidKeyCollection",
+    functionName: "getFirstValidCollection",
     args: [address],
   });
 
@@ -63,9 +63,9 @@ export const UserProfile = () => {
               <div className="mb-2">
                 <span className="text-primary font-bold">Status: </span>
                 {hasValidKey ? (
-                  <span className="badge badge-success">Verified User</span>
+                  <span className="badge badge-success">Access</span>
                 ) : (
-                  <span className="badge badge-error">Unverified</span>
+                  <span className="badge badge-error">No Access</span>
                 )}
               </div>
 

@@ -267,9 +267,10 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
     }
 
     function setExchangeRate(uint256 newRate) external onlyOwner {
+        uint256 maxRate = 1000;
         if (block.timestamp < systemState.lastRateChangeTimestamp + feeConfig.rateChangeCooldown)
             revert RateCooldownActive();
-        if (newRate == 0) revert InvalidExchangeRate();
+        if (newRate == 0 || newRate > maxRate) revert InvalidExchangeRate();
 
         tokenConfig.exchangeRate = newRate;
         systemState.lastRateChangeTimestamp = block.timestamp;

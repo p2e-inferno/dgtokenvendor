@@ -42,10 +42,10 @@ const TokenVendor: NextPage = () => {
 
       <div className="flex flex-col items-center">
         <div className="text-center mb-8 max-w-2xl">
-          <h1 className="text-4xl font-bold text-primary mb-4">Token Vendor</h1>
+          <h1 className="text-4xl font-bold text-primary mb-4">DGToken Vendor</h1>
           <p className="text-base-content/70 text-lg">
-            Buy and sell digital tokens using our secure token vendor. Verified users can exchange tokens at competitive
-            rates.
+            Buy and sell digital tokens using our secure token vendor. Users with <strong>Access</strong> can exchange
+            tokens at the current vendor rate.
           </p>
         </div>
 

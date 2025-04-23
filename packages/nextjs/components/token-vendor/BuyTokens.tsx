@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { formatEther } from "viem";
-import { useAccount } from "wagmi";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
@@ -12,36 +10,38 @@ export const BuyTokens = () => {
   const [isUPTokenApproved, setIsUPTokenApproved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { address } = useAccount();
-
   const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
     functionName: "symbol",
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
   const { data: exchangeRate } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "exchangeRate",
+    functionName: "getExchangeRate",
   });
 
-  // Get exchange rate as a string
+  const { data: feeConfig } = useScaffoldReadContract({
+    contractName: "DGTokenVendor",
+    functionName: "getFeeConfig",
+  });
+
   const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
 
   const { data: vendorContractData } = useDeployedContractInfo("DGTokenVendor");
   const { writeContractAsync: writeVendorAsync } = useScaffoldWriteContract("DGTokenVendor");
-  const { writeContractAsync: writeUnlockTokenAsync } = useScaffoldWriteContract("UnlockProtocolToken");
+  const { writeContractAsync: writeDAPPXAsync } = useScaffoldWriteContract("DAPPX");
 
   const handleApproveTokens = async () => {
     if (!tokensToBuy || !vendorContractData?.address) return;
 
     setIsLoading(true);
     try {
-      await writeUnlockTokenAsync({
+      await writeDAPPXAsync({
         functionName: "approve",
         args: [vendorContractData.address, multiplyTo1e18(tokensToBuy)],
       });
@@ -93,6 +93,9 @@ export const BuyTokens = () => {
           <span className="font-semibold text-primary">
             {exchangeRateStr} {dgTokenSymbol} per {upTokenSymbol}
           </span>
+          {feeConfig && Number(feeConfig.buyFeeBps) > 0 && (
+            <span className="block mt-1 text-xs">(Fee: {Number(feeConfig.buyFeeBps) / 100}%)</span>
+          )}
         </p>
 
         <div className="form-control w-full mb-4">

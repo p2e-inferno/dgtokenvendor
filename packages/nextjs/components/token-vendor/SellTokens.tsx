@@ -20,18 +20,18 @@ export const SellTokens = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
   const { data: exchangeRate } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "exchangeRate",
+    functionName: "getExchangeRate",
   });
 
-  const { data: sellFeeBPS } = useScaffoldReadContract({
+  const { data: feeConfig } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
-    functionName: "sellFeeBPS",
+    functionName: "getFeeConfig",
   });
 
   const { data: vendorContractData } = useDeployedContractInfo("DGTokenVendor");
@@ -43,11 +43,11 @@ export const SellTokens = () => {
 
   // Calculate return amount based on exchange rate and sell fee
   const calculateReturn = (amount: string) => {
-    if (!amount || !exchangeRate || !sellFeeBPS) return "0";
+    if (!amount || !exchangeRate || !feeConfig) return "0";
 
     const sellAmount = Number(amount);
     const rate = Number(exchangeRate);
-    const fee = Number(sellFeeBPS) / 10000; // Convert basis points to percentage
+    const fee = Number(feeConfig.sellFeeBps) / 10000; // Convert basis points to percentage
 
     if (sellAmount <= 0 || rate <= 0) return "0";
 
@@ -113,10 +113,10 @@ export const SellTokens = () => {
         <p className="text-sm text-base-content/70 mb-4">
           Sell your {dgTokenSymbol} for {upTokenSymbol} at the current rate of{" "}
           <span className="font-semibold text-secondary">
-            {exchangeRateStr} {dgTokenSymbol} per {upTokenSymbol}
+            {1 / Number(exchangeRate)} {upTokenSymbol} per {dgTokenSymbol}
           </span>
-          {sellFeeBPS && Number(sellFeeBPS) > 0 && (
-            <span className="block mt-1 text-xs">(Fee: {Number(sellFeeBPS) / 100}%)</span>
+          {feeConfig && Number(feeConfig.sellFeeBps) > 0 && (
+            <span className="block mt-1 text-xs">(Fee: {Number(feeConfig.sellFeeBps) / 100}%)</span>
           )}
         </p>
 

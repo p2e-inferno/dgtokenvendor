@@ -12,7 +12,7 @@ export const UserStats = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "symbol",
   });
 
@@ -28,7 +28,7 @@ export const UserStats = () => {
   });
 
   const { data: yourUPTokenBalance } = useScaffoldReadContract({
-    contractName: "UnlockProtocolToken",
+    contractName: "DAPPX",
     functionName: "balanceOf",
     args: [address],
   });
@@ -50,12 +50,12 @@ export const UserStats = () => {
             <div className="stat-value flex items-center gap-2">
               {hasValidKey ? (
                 <>
-                  <span className="text-success text-lg">Verified</span>
+                  <span className="text-success text-lg">Access</span>
                   <span className="text-2xl">✅</span>
                 </>
               ) : (
                 <>
-                  <span className="text-error text-lg">Unverified</span>
+                  <span className="text-error text-lg">No Access</span>
                   <span className="text-2xl">⚠️</span>
                 </>
               )}
