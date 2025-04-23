@@ -59,11 +59,9 @@ contract MockNFT is ERC721, ERC721URIStorage, Ownable {
 
     /**
      * @dev Get the token ID of the user's first token (implements IPublicLock interface)
-     * @param _user The user address
-     * @param _index The index of the token
      * @return The token ID
      */
-    function tokenOfOwnerByIndex(address _user, uint256 _index) external view returns (uint256) {
+    function tokenOfOwnerByIndex() external pure returns (uint256) { 
         // This is a simplified implementation - real implementation would need to track tokens per owner
         return 0;
     }
