@@ -1,0 +1,12 @@
+This is a placeholder for the fallback.png file.
+
+Since we can't directly create binary image files through text editing, you'll need to:
+
+1. Create a fallback.png image file and place it in this directory
+2. Create the NFT collection image files:
+   - buidlguidl.png
+   - dg-supporter.png
+   - partners.png
+   - early-adopter.png
+
+Alternatively, you can temporarily use images from Next.js public domain by updating the URLs in WhitelistedNFTs.tsx 

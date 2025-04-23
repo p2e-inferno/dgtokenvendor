@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { NextPage } from "next";
 import { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { ArrowPathIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { BuyTokens } from "~~/components/token-vendor/BuyTokens";
+import { NFTCollectionsModal } from "~~/components/token-vendor/NFTCollectionsModal";
 import { SellTokens } from "~~/components/token-vendor/SellTokens";
 import { UserStats } from "~~/components/token-vendor/UserStats";
 import { VendorInfo } from "~~/components/token-vendor/VendorInfo";
@@ -13,12 +14,21 @@ import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const TokenVendor: NextPage = () => {
   const { address } = useAccount();
+  const [isNFTModalOpen, setIsNFTModalOpen] = useState(false);
 
   const { data: hasValidKey } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "hasValidKey",
     args: [address],
   });
+
+  const handleOpenNFTModal = () => {
+    setIsNFTModalOpen(true);
+  };
+
+  const handleCloseNFTModal = () => {
+    setIsNFTModalOpen(false);
+  };
 
   return (
     <div className="container mx-auto px-4 pt-10 pb-16">
@@ -33,7 +43,7 @@ const TokenVendor: NextPage = () => {
           </p>
         </div>
 
-        <div className="w-full mb-8">
+        <div className="w-full max-w-4xl mb-8">
           <UserStats />
         </div>
 
@@ -52,7 +62,9 @@ const TokenVendor: NextPage = () => {
                 collections.
               </div>
             </div>
-            <button className="btn btn-sm btn-primary">Learn How</button>
+            <button className="btn btn-sm btn-primary" onClick={handleOpenNFTModal}>
+              Learn How
+            </button>
           </div>
         )}
 
@@ -67,6 +79,8 @@ const TokenVendor: NextPage = () => {
           <VendorInfo />
         </div>
       </div>
+
+      <NFTCollectionsModal isOpen={isNFTModalOpen} onClose={handleCloseNFTModal} />
     </div>
   );
 };
