@@ -43,24 +43,17 @@ export const VendorInfo = () => {
     functionName: "getFeeConfig",
   });
 
-
   const { data: exchangeRate } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "getExchangeRate",
   });
 
-  // Get exchange rate as a string
   const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
 
   const { data: systemState } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "getSystemState",
   });
-
-  // const { data: swapTokenFees } = useScaffoldReadContract({
-  //   contractName: "DGTokenVendor",
-  //   functionName: "swapTokenFees",
-  // });
 
   return (
     <div className="card bg-base-100 shadow-xl">

@@ -3,7 +3,6 @@ import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import { useTokenTransaction } from "~~/hooks/useTokenTransaction";
-import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
 import { calculateTokenConversion } from "~~/utils/token-vendor/calculations";
 
 export const BuyTokens = () => {

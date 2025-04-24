@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useDeployedContractInfo, useScaffoldWriteContract } from "./scaffold-eth";
 import { Address } from "viem";
+import { TokenAction, TokenContractName, VendorContractName } from "~~/types/dgtoken-vendor";
 import { notification } from "~~/utils/scaffold-eth/notification";
 import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
 
-export type TokenAction = "buy" | "sell";
-
 interface UseTokenTransactionProps {
-  tokenContractName: string;
-  vendorContractName: string;
+  tokenContractName: TokenContractName;
+  vendorContractName: VendorContractName;
   tokenSymbol: string;
 }
 
@@ -39,7 +38,7 @@ export const useTokenTransaction = ({
       return true;
     } catch (err) {
       console.error(`Error approving ${tokenSymbol}:`, err);
-      // Don't show error notification here as useScaffoldWriteContract already handles it
+
       setIsApproved(false);
       return false;
     } finally {
@@ -62,7 +61,6 @@ export const useTokenTransaction = ({
       return true;
     } catch (err) {
       console.error(`Error ${action === "buy" ? "buying" : "selling"} tokens:`, err);
-      // Don't show error notification here as useScaffoldWriteContract already handles it
       return false;
     } finally {
       setIsTransactionLoading(false);
