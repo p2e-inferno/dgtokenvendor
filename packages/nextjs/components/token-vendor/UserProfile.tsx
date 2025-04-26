@@ -1,36 +1,35 @@
 import React from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { formatEther } from "viem";
-import { useReadContract } from "wagmi";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 import { usePrivyWallet } from "~~/hooks/privy/usePrivyWallet";
-
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 export const UserProfile = () => {
   const { address, isConnected, ready } = usePrivyWallet();
   const { logout } = usePrivy();
 
-  const { data: dgTokenSymbol } = useReadContract({
+  const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
     functionName: "symbol",
     query: { enabled: isConnected && ready },
   });
 
-  const { data: upTokenSymbol } = useReadContract({
+  const { data: upTokenSymbol } = useScaffoldReadContract({
     contractName: "DAPPX",
     functionName: "symbol",
     query: { enabled: isConnected && ready },
   });
 
-  const { data: yourDGTokenBalance, isLoading: isLoadingDG } = useReadContract({
+  const { data: yourDGTokenBalance, isLoading: isLoadingDG } = useScaffoldReadContract({
     contractName: "DGToken",
     functionName: "balanceOf",
     args: [address],
     query: { enabled: isConnected && ready && !!address },
   });
 
-  const { data: yourUPTokenBalance, isLoading: isLoadingUP } = useReadContract({
+  const { data: yourUPTokenBalance, isLoading: isLoadingUP } = useScaffoldReadContract({
     contractName: "DAPPX",
     functionName: "balanceOf",
     args: [address],
@@ -40,14 +39,14 @@ export const UserProfile = () => {
   console.log("connectAddress:: ", address);
   console.log("BALL:: ", yourUPTokenBalance);
 
-  const { data: hasValidKey, isLoading: isLoadingKey } = useReadContract({
+  const { data: hasValidKey, isLoading: isLoadingKey } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "hasValidKey",
     args: [address],
     query: { enabled: isConnected && ready && !!address },
   });
 
-  const { data: keyCollection, isLoading: isLoadingCollection } = useReadContract({
+  const { data: keyCollection, isLoading: isLoadingCollection } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "getFirstValidCollection",
     args: [address],

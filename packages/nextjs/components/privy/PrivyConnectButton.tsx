@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { Address } from "viem";
+import { useDisconnect } from "wagmi";
 import { Balance } from "~~/components/scaffold-eth/Balance";
 import { usePrivyWallet } from "~~/hooks/privy/usePrivyWallet";
 import { useNetworkColor } from "~~/hooks/scaffold-eth";
@@ -14,11 +15,12 @@ import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
  * Custom Privy Connect Button designed to look and function like the RainbowKit button
  */
 export const PrivyConnectButton = () => {
-  const { login, logout, authenticated, user, linkWallet, linkEmail, linkTwitter, linkFarcaster } = usePrivy();
+  const { login, logout, user, linkWallet, linkTwitter, linkFarcaster } = usePrivy();
   const { address, activeWallet, isConnected, ready } = usePrivyWallet();
   const networkColor = useNetworkColor();
   const { targetNetwork } = useTargetNetwork();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { disconnect: disconnectWagmi } = useDisconnect();
 
   const blockExplorerAddressLink = address ? getBlockExplorerAddressLink(targetNetwork, address as Address) : undefined;
 
@@ -38,9 +40,16 @@ export const PrivyConnectButton = () => {
 
   // Get the list of connected accounts
   const connectedAccounts = user?.linkedAccounts || [];
-  const hasTwitter = connectedAccounts.some(account => account.type === "twitter");
+  const hasTwitter = connectedAccounts.some(account => account.type === "twitter_oauth");
   const hasFarcaster = connectedAccounts.some(account => account.type === "farcaster");
   const walletCount = connectedAccounts.filter(account => account.type === "wallet").length;
+
+  const handleLogout = () => {
+    setIsDropdownOpen(false);
+    localStorage.removeItem("connectedWalletType");
+    logout();
+    disconnectWagmi();
+  };
 
   return (
     <div className="flex items-center">
@@ -149,15 +158,7 @@ export const PrivyConnectButton = () => {
               </li>
             )}
             <li className="border-t border-base-300 mt-2 pt-2">
-              <button
-                className="text-error"
-                type="button"
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  localStorage.removeItem("connectedWalletType");
-                  logout();
-                }}
-              >
+              <button className="text-error" type="button" onClick={handleLogout}>
                 Disconnect
               </button>
             </li>

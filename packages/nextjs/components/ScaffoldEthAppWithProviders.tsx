@@ -18,12 +18,12 @@ export const queryClient = new QueryClient({
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <PrivyProvider>
+      <PrivyProvider>
+        <QueryClientProvider client={queryClient}>
           <ProgressBar height="3px" color="#2299dd" />
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
-        </PrivyProvider>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </PrivyProvider>
     </WagmiProvider>
   );
 };

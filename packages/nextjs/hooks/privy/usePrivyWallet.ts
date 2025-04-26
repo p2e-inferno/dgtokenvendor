@@ -54,14 +54,16 @@ export const usePrivyWallet = () => {
   const privyHooksEnabled = useMemo(() => isPrivyAvailable(), []);
 
   // Safe access to Privy hooks with stable references
-  const privyAuth = useMemo(() => (privyHooksEnabled ? usePrivy() : EMPTY_PRIVY_AUTH), [privyHooksEnabled]);
+  const privyResult = usePrivy();
+  const privyAuth = privyHooksEnabled ? privyResult : EMPTY_PRIVY_AUTH;
 
   const { user, ready: privyReady, authenticated, login, logout } = privyAuth;
 
   // Only call useWallets if Privy is available, with stable fallback
-  const walletsResult = useMemo(() => (privyHooksEnabled ? useWallets() : EMPTY_WALLETS_RESULT), [privyHooksEnabled]);
+  const wallets = useWallets();
+  const walletsResult = privyHooksEnabled ? wallets : EMPTY_WALLETS_RESULT;
 
-  const { wallets, ready: walletsReady } = walletsResult;
+  const { wallets: walletsFromResult, ready: walletsReady } = walletsResult;
 
   const [privyActiveWallet, setPrivyActiveWallet] = useState<any | null>(null);
   const [isPrivyWalletSwitching, setIsPrivyWalletSwitching] = useState(false);
@@ -71,13 +73,13 @@ export const usePrivyWallet = () => {
   const { data: wagmiWalletClient } = useWalletClient();
 
   useEffect(() => {
-    if (!privyHooksEnabled || !walletsReady || !wallets.length) {
+    if (!privyHooksEnabled || !walletsReady || !walletsFromResult.length) {
       setPrivyActiveWallet(null);
       return;
     }
-    const embeddedWallet = wallets.find((wallet: any) => wallet.walletClientType === "privy");
-    setPrivyActiveWallet(embeddedWallet || wallets[0]);
-  }, [wallets, walletsReady, privyHooksEnabled]);
+    const embeddedWallet = walletsFromResult.find((wallet: any) => wallet.walletClientType === "privy");
+    setPrivyActiveWallet(embeddedWallet || walletsFromResult[0]);
+  }, [walletsFromResult, walletsReady, privyHooksEnabled]);
 
   useEffect(() => {
     const connectToChain = async () => {
@@ -217,7 +219,7 @@ export const usePrivyWallet = () => {
       // Wallet Details
       address,
       chainId,
-      wallets: privyHooksEnabled ? wallets : [], // List of Privy wallets
+      wallets: privyHooksEnabled ? walletsFromResult : [], // List of Privy wallets
       activeWallet: privyActiveWallet, // The active Privy wallet
 
       // Actions
@@ -237,7 +239,7 @@ export const usePrivyWallet = () => {
       address,
       chainId,
       privyHooksEnabled,
-      wallets,
+      walletsFromResult,
       privyActiveWallet,
       sendTransaction,
       signMessage,

@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, PropsWithChildren, useEffect, useState } from "react";
+import { FC, PropsWithChildren } from "react";
 import { PrivyProvider as PrivyReactProvider } from "@privy-io/react-auth";
 import { useTheme } from "next-themes";
 
@@ -11,18 +11,12 @@ import { useTheme } from "next-themes";
 const PrivyProvider: FC<PropsWithChildren> = ({ children }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
-  const [appId, setAppId] = useState<string | null>(null);
 
-  // Get app ID from environment variable
-  useEffect(() => {
-    const id = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-    if (id && id !== "your-privy-app-id") {
-      setAppId(id);
-    }
-  }, []);
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   // If no valid app ID is available, just render children without Privy
-  if (!appId) {
+  if (!appId || appId === "your-privy-app-id") {
+    console.error("Privy app ID not configured. Add NEXT_PUBLIC_PRIVY_APP_ID to .env");
     return <>{children}</>;
   }
 
