@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon } from "@heroicons/react/24/outline";
@@ -68,11 +68,32 @@ export const HeaderMenuLinks = () => {
  */
 export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [PrivyConnectButton, setPrivyConnectButton] = useState<React.ComponentType<any> | null>(null);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
+
   useOutsideClick(
     burgerMenuRef,
     useCallback(() => setIsDrawerOpen(false), []),
   );
+
+  // Dynamically import Privy to avoid requiring it during server-side rendering
+  useEffect(() => {
+    const loadPrivyButton = async () => {
+      try {
+        // Dynamic import for the Privy component
+        const { PrivyConnectButton: Button } = await import("~~/components/privy");
+        setPrivyConnectButton(() => Button);
+      } catch (error) {
+        console.warn("Privy module not available:", error);
+      }
+    };
+
+    loadPrivyButton();
+  }, []);
+
+  // Check if Privy app ID is available
+  const privyAppId = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_PRIVY_APP_ID : null;
+  const isPrivyEnabled = privyAppId && privyAppId !== "your-privy-app-id" && PrivyConnectButton;
 
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-accent/20 px-0 sm:px-2">
@@ -107,7 +128,7 @@ export const Header = () => {
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight text-primary">DGToken Vendor</span>
-            <span className="text-xs">Swap your tokens</span>
+            <span className="text-xs">By P2E INFERNO</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
@@ -115,7 +136,7 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end flex-grow mr-4">
-        <RainbowKitCustomConnectButton />
+        {isPrivyEnabled && PrivyConnectButton ? <PrivyConnectButton /> : <RainbowKitCustomConnectButton />}
         <FaucetButton />
       </div>
     </div>

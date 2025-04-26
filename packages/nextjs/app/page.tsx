@@ -3,7 +3,8 @@
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { BugAntIcon, CurrencyDollarIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { CurrencyDollarIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
 
 const Home: NextPage = () => {
   const { address } = useAccount();
@@ -58,21 +59,25 @@ const Home: NextPage = () => {
             </div>
           </Link>
 
-          {/* Debug Card */}
+          {/* Power Up Card - replacing Debug Contracts */}
           <Link
-            href="/debug"
+            href="/token-vendor/power-up"
             className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-secondary/20 hover:border-secondary/50"
           >
             <div className="card-body">
               <div className="flex justify-between items-start">
-                <h2 className="card-title text-secondary">Debug Contracts</h2>
-                <BugAntIcon className="h-8 w-8 text-secondary" />
+                <h2 className="card-title text-secondary">Power Up</h2>
+                <div className="flex">
+                  <FireIcon className="h-8 w-8 text-orange-500" />
+                  <TrophyIcon className="h-8 w-8 text-yellow-500 -ml-2" />
+                </div>
               </div>
               <p className="text-base-content/70">
-                Explore and debug smart contracts. Test functionalities and analyze internal operations.
+                Light up your fuel gauge and upgrade your trader status. Ascend from PLEB to HUSTLER to OG with
+                strategic actions.
               </p>
               <div className="card-actions justify-end mt-4">
-                <button className="btn btn-secondary btn-sm">Debug</button>
+                <button className="btn btn-secondary btn-sm">Power Up</button>
               </div>
             </div>
           </Link>

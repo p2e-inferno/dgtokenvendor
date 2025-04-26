@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
@@ -12,6 +12,13 @@ import { Header } from "~~/components/Header";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+
+// Lazy load the PrivyProvider to prevent requiring it when not configured
+const LazyPrivyProvider = lazy(() =>
+  import("~~/components/privy/PrivyProvider").then(module => ({
+    default: module.default,
+  })),
+);
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
@@ -40,21 +47,51 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const [mounted, setMounted] = useState(false);
+  const [isPrivyEnabled, setIsPrivyEnabled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    // Check if Privy is enabled by environment variable
+    if (typeof window !== "undefined") {
+      const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+      setIsPrivyEnabled(privyAppId != null && privyAppId !== "your-privy-app-id");
+    }
   }, []);
 
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ProgressBar height="3px" color="#2299dd" />
-        <RainbowKitProvider
-          avatar={BlockieAvatar}
-          theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
-        >
-          <ScaffoldEthApp>{children}</ScaffoldEthApp>
-        </RainbowKitProvider>
+
+        {isPrivyEnabled ? (
+          <Suspense
+            fallback={
+              <RainbowKitProvider
+                avatar={BlockieAvatar}
+                theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+              >
+                <ScaffoldEthApp>{children}</ScaffoldEthApp>
+              </RainbowKitProvider>
+            }
+          >
+            <LazyPrivyProvider>
+              <RainbowKitProvider
+                avatar={BlockieAvatar}
+                theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+              >
+                <ScaffoldEthApp>{children}</ScaffoldEthApp>
+              </RainbowKitProvider>
+            </LazyPrivyProvider>
+          </Suspense>
+        ) : (
+          <RainbowKitProvider
+            avatar={BlockieAvatar}
+            theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+          >
+            <ScaffoldEthApp>{children}</ScaffoldEthApp>
+          </RainbowKitProvider>
+        )}
       </QueryClientProvider>
     </WagmiProvider>
   );
