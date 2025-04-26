@@ -33,16 +33,14 @@ const PrivyProvider: FC<PropsWithChildren> = ({ children }) => {
         // Create embedded wallets for users who don't have a wallet
         embeddedWallets: {
           createOnLogin: "users-without-wallets",
-          noPromptOnSignature: true, // Removes approval confirmations for better UX
         },
         // Customize appearance based on theme
         appearance: {
           theme: isDarkMode ? "dark" : "light",
           accentColor: "#2299dd", // Match your app's accent color
         },
-        // Use the default chain configuration that Privy handles automatically
-        // This works around the privyWalletOverride issue
-        loginMethods: ["wallet", "email"],
+        // Login methods
+        loginMethods: ["wallet", "email", "twitter", "farcaster"],
       }}
     >
       {children}

@@ -1,46 +1,74 @@
 import React from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { formatEther } from "viem";
-import { useAccount } from "wagmi";
+import { useReadContract } from "wagmi";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { usePrivyWallet } from "~~/hooks/privy/usePrivyWallet";
+
 
 export const UserProfile = () => {
-  const { address } = useAccount();
+  const { address, isConnected, ready } = usePrivyWallet();
+  const { logout } = usePrivy();
 
-  const { data: dgTokenSymbol } = useScaffoldReadContract({
+  const { data: dgTokenSymbol } = useReadContract({
     contractName: "DGToken",
     functionName: "symbol",
+    query: { enabled: isConnected && ready },
   });
 
-  const { data: upTokenSymbol } = useScaffoldReadContract({
+  const { data: upTokenSymbol } = useReadContract({
     contractName: "DAPPX",
     functionName: "symbol",
+    query: { enabled: isConnected && ready },
   });
 
-  const { data: yourDGTokenBalance } = useScaffoldReadContract({
+  const { data: yourDGTokenBalance, isLoading: isLoadingDG } = useReadContract({
     contractName: "DGToken",
     functionName: "balanceOf",
     args: [address],
+    query: { enabled: isConnected && ready && !!address },
   });
 
-  const { data: yourUPTokenBalance } = useScaffoldReadContract({
+  const { data: yourUPTokenBalance, isLoading: isLoadingUP } = useReadContract({
     contractName: "DAPPX",
     functionName: "balanceOf",
     args: [address],
+    query: { enabled: isConnected && ready && !!address },
   });
 
-  const { data: hasValidKey } = useScaffoldReadContract({
+  console.log("connectAddress:: ", address);
+  console.log("BALL:: ", yourUPTokenBalance);
+
+  const { data: hasValidKey, isLoading: isLoadingKey } = useReadContract({
     contractName: "DGTokenVendor",
     functionName: "hasValidKey",
     args: [address],
+    query: { enabled: isConnected && ready && !!address },
   });
 
-  const { data: keyCollection } = useScaffoldReadContract({
+  const { data: keyCollection, isLoading: isLoadingCollection } = useReadContract({
     contractName: "DGTokenVendor",
     functionName: "getFirstValidCollection",
     args: [address],
+    query: { enabled: isConnected && ready && !!address && !isLoadingKey && !!hasValidKey },
   });
+
+  if (!ready || (isConnected && !address)) {
+    return (
+      <div className="container mx-auto p-6 flex justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="container mx-auto p-6 text-center">
+        <p>Please connect your wallet to view profile details.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -62,17 +90,25 @@ export const UserProfile = () => {
 
               <div className="mb-2">
                 <span className="text-primary font-bold">Status: </span>
-                {hasValidKey ? (
+                {isLoadingKey ? (
+                  <span className="loading loading-dots loading-xs"></span>
+                ) : hasValidKey ? (
                   <span className="badge badge-success">Access</span>
                 ) : (
                   <span className="badge badge-error">No Access</span>
                 )}
               </div>
 
-              {hasValidKey && keyCollection && keyCollection !== "0x0000000000000000000000000000000000000000" && (
+              {hasValidKey && (
                 <div className="mb-2">
                   <span className="text-primary font-bold">Key Collection: </span>
-                  <Address address={keyCollection} />
+                  {isLoadingCollection ? (
+                    <span className="loading loading-dots loading-xs"></span>
+                  ) : keyCollection && keyCollection !== "0x0000000000000000000000000000000000000000" ? (
+                    <Address address={keyCollection} />
+                  ) : (
+                    <span className="text-base-content/70 text-sm">Not found</span>
+                  )}
                 </div>
               )}
             </div>
@@ -89,8 +125,14 @@ export const UserProfile = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="stat-title">{dgTokenSymbol} Balance</div>
-                  <div className="stat-value">{parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(4)}</div>
+                  <div className="stat-title">{dgTokenSymbol || "DGToken"} Balance</div>
+                  <div className="stat-value">
+                    {isLoadingDG ? (
+                      <span className="loading loading-dots loading-xs"></span>
+                    ) : (
+                      parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(4)
+                    )}
+                  </div>
                   <div className="stat-desc">Digital Game Token</div>
                 </div>
 
@@ -102,8 +144,14 @@ export const UserProfile = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="stat-title">{upTokenSymbol} Balance</div>
-                  <div className="stat-value">{parseFloat(formatEther(yourUPTokenBalance || 0n)).toFixed(4)}</div>
+                  <div className="stat-title">{upTokenSymbol || "DAPPX"} Balance</div>
+                  <div className="stat-value">
+                    {isLoadingUP ? (
+                      <span className="loading loading-dots loading-xs"></span>
+                    ) : (
+                      parseFloat(formatEther(yourUPTokenBalance || 0n)).toFixed(4)
+                    )}
+                  </div>
                   <div className="stat-desc">Unlock Protocol Token</div>
                 </div>
               </div>
@@ -210,8 +258,15 @@ export const UserProfile = () => {
           </div>
 
           <div className="card-actions justify-end mt-4">
-            <button className="btn btn-primary">Export Data</button>
-            <button className="btn btn-outline">Settings</button>
+            <button
+              onClick={() => {
+                logout();
+                window.location.href = "/";
+              }}
+              className="btn btn-primary"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

@@ -4,8 +4,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { BoltIcon, CurrencyDollarIcon, HomeIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { BoltIcon, ChartBarIcon, CurrencyDollarIcon, HomeIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { PrivyConnectButton } from "~~/components/privy";
+import { FaucetButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
 type HeaderMenuLink = {
@@ -29,6 +30,11 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Profile",
     href: "/profile",
     icon: <UserCircleIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Stats",
+    href: "/stats",
+    icon: <ChartBarIcon className="h-4 w-4" />,
   },
   {
     label: "Events",
@@ -68,32 +74,12 @@ export const HeaderMenuLinks = () => {
  */
 export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [PrivyConnectButton, setPrivyConnectButton] = useState<React.ComponentType<any> | null>(null);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick(
     burgerMenuRef,
     useCallback(() => setIsDrawerOpen(false), []),
   );
-
-  // Dynamically import Privy to avoid requiring it during server-side rendering
-  useEffect(() => {
-    const loadPrivyButton = async () => {
-      try {
-        // Dynamic import for the Privy component
-        const { PrivyConnectButton: Button } = await import("~~/components/privy");
-        setPrivyConnectButton(() => Button);
-      } catch (error) {
-        console.warn("Privy module not available:", error);
-      }
-    };
-
-    loadPrivyButton();
-  }, []);
-
-  // Check if Privy app ID is available
-  const privyAppId = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_PRIVY_APP_ID : null;
-  const isPrivyEnabled = privyAppId && privyAppId !== "your-privy-app-id" && PrivyConnectButton;
 
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-accent/20 px-0 sm:px-2">
@@ -136,7 +122,7 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end flex-grow mr-4">
-        {isPrivyEnabled && PrivyConnectButton ? <PrivyConnectButton /> : <RainbowKitCustomConnectButton />}
+        <PrivyConnectButton />
         <FaucetButton />
       </div>
     </div>

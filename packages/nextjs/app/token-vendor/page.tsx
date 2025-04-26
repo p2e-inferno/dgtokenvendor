@@ -1,77 +1,33 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import type { NextPage } from "next";
-import { useAccount } from "wagmi";
 import { ArrowPathIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { BuyTokens } from "~~/components/token-vendor/BuyTokens";
 import { NFTCollectionsModal } from "~~/components/token-vendor/NFTCollectionsModal";
 import { SellTokens } from "~~/components/token-vendor/SellTokens";
 import { UserStats } from "~~/components/token-vendor/UserStats";
 import { VendorInfo } from "~~/components/token-vendor/VendorInfo";
+import { usePrivyWallet } from "~~/hooks/privy/usePrivyWallet";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-// Lazy load Privy components to avoid requiring them during server-side rendering
-const LazyPrivyBuyTokens = React.lazy(() =>
-  import("~~/components/token-vendor/PrivyBuyTokens").then(module => ({
-    default: module.PrivyBuyTokens,
-  })),
-);
-
-// Lazy load Privy hooks
-const usePrivyWallet = async () => {
-  if (typeof window === "undefined") return { address: undefined, isConnected: false };
-
-  try {
-    const { usePrivyWallet: hook } = await import("~~/hooks/privy");
-    return hook();
-  } catch (error) {
-    console.warn("Privy hooks not available:", error);
-    return { address: undefined, isConnected: false };
-  }
-};
-
 const TokenVendor: NextPage = () => {
-  const { address: wagmiAddress } = useAccount();
-  const [privyAddress, setPrivyAddress] = useState<string | undefined>();
-  const [isPrivyConnected, setIsPrivyConnected] = useState(false);
-  const [isPrivyAvailable, setIsPrivyAvailable] = useState(false);
-  const address = privyAddress || wagmiAddress;
+  const { address, isConnected, ready } = usePrivyWallet();
   const [isNFTModalOpen, setIsNFTModalOpen] = useState(false);
 
-  // Load Privy wallet info if available
-  useEffect(() => {
-    const loadPrivyWallet = async () => {
-      try {
-        // Check if Privy is available
-        const { usePrivyWallet: hookFn } = await import("~~/hooks/privy");
+  // Memoize query config
+  const queryConfig = useMemo(
+    () => ({
+      enabled: ready && !!address,
+    }),
+    [ready, address],
+  );
 
-        // If we get here, Privy is available
-        setIsPrivyAvailable(true);
-
-        // Get the current wallet info
-        const { address, isConnected } = hookFn();
-        setPrivyAddress(address);
-        setIsPrivyConnected(isConnected);
-      } catch (error) {
-        console.warn("Privy wallet not available:", error);
-        setIsPrivyAvailable(false);
-      }
-    };
-
-    loadPrivyWallet();
-  }, []);
-
-  const { data: hasValidKey } = useScaffoldReadContract({
+  const { data: hasValidKey, isLoading: isLoadingKey } = useScaffoldReadContract<"DGTokenVendor", "hasValidKey">({
     contractName: "DGTokenVendor",
     functionName: "hasValidKey",
-    args: [address],
-  });
-
-  const { data: yourSwapTokenBalance } = useScaffoldReadContract({
-    contractName: "DAPPX",
-    functionName: "balanceOf",
-    args: [address],
+    args: address ? [address] : undefined,
+    query: queryConfig,
   });
 
   const handleOpenNFTModal = () => {
@@ -81,6 +37,8 @@ const TokenVendor: NextPage = () => {
   const handleCloseNFTModal = () => {
     setIsNFTModalOpen(false);
   };
+
+  const isPageLoading = !ready || isLoadingKey;
 
   return (
     <div className="container mx-auto px-4 pt-10 pb-16">
@@ -93,38 +51,17 @@ const TokenVendor: NextPage = () => {
           </p>
         </div>
 
-        <div className="w-full max-w-4xl mb-8">
-          <UserStats />
-        </div>
+        <div className="w-full max-w-4xl mb-8">{isConnected && <UserStats />}</div>
 
         {hasValidKey ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mb-10">
-              {isPrivyConnected && isPrivyAvailable ? (
-                <React.Suspense
-                  fallback={<div className="card bg-base-100 shadow-xl border border-primary/20 p-4">Loading...</div>}
-                >
-                  <LazyPrivyBuyTokens />
-                </React.Suspense>
-              ) : (
-                <BuyTokens />
-              )}
+              <BuyTokens />
               <SellTokens />
             </div>
-            {isPrivyAvailable && !isPrivyConnected && (
-              <div className="alert alert-info mb-10 max-w-4xl">
-                <div>
-                  <h3 className="font-bold">Frictionless Experience Available</h3>
-                  <div className="text-sm">
-                    Connect with Privy in the header to enjoy a smoother transaction experience with fewer confirmation
-                    popups.
-                  </div>
-                </div>
-              </div>
-            )}
           </>
-        ) : (
-          <div className="alert alert-warning mb-10 max-w-4xl">
+        ) : isConnected ? (
+          <div className="alert alert-warning mb-10 max-w-4xl shadow-lg">
             <QuestionMarkCircleIcon className="h-6 w-6" />
             <div>
               <h3 className="font-bold">Access Required</h3>
@@ -136,6 +73,23 @@ const TokenVendor: NextPage = () => {
             <button className="btn btn-sm btn-primary" onClick={handleOpenNFTModal}>
               Learn How
             </button>
+          </div>
+        ) : (
+          <div className="alert alert-info mb-10 max-w-4xl shadow-lg">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              className="stroke-current shrink-0 w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span>Please connect your wallet to use the Token Vendor.</span>
           </div>
         )}
 

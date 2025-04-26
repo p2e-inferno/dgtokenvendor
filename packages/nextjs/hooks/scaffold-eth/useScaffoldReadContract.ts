@@ -3,7 +3,7 @@ import { QueryObserverResult, RefetchOptions, useQueryClient } from "@tanstack/r
 import type { ExtractAbiFunctionNames } from "abitype";
 import { ReadContractErrorType } from "viem";
 import { useBlockNumber, useReadContract } from "wagmi";
-import { useSelectedNetwork } from "~~/hooks/scaffold-eth";
+import { usePrivyWallet } from "~~/hooks/privy/usePrivyWallet";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { AllowedChainIds } from "~~/utils/scaffold-eth";
 import {
@@ -14,13 +14,13 @@ import {
 } from "~~/utils/scaffold-eth/contract";
 
 /**
- * Wrapper around wagmi's useContractRead hook which automatically loads (by name) the contract ABI and address from
- * the contracts present in deployedContracts.ts & externalContracts.ts corresponding to targetNetworks configured in scaffold.config.ts
+ * Wrapper around wagmi's useReadContract hook which automatically loads contract ABI and address,
+ * and uses the wallet address and chainId from the consolidated usePrivyWallet hook.
  * @param config - The config settings, including extra wagmi configuration
  * @param config.contractName - deployed contract name
  * @param config.functionName - name of the function to be called
  * @param config.args - args to be passed to the function call
- * @param config.chainId - optional chainId that is configured with the scaffold project to make use for multi-chain interactions.
+ * @param config.chainId - This is effectively ignored now, chainId comes from usePrivyWallet
  */
 export const useScaffoldReadContract = <
   TContractName extends ContractName,
@@ -29,28 +29,41 @@ export const useScaffoldReadContract = <
   contractName,
   functionName,
   args,
-  chainId,
+  // chainId is ignored, taken from usePrivyWallet
   ...readConfig
 }: UseScaffoldReadConfig<TContractName, TFunctionName>) => {
-  const selectedNetwork = useSelectedNetwork(chainId);
+  const { chainId, isConnected, address: connectedAddress } = usePrivyWallet(); // Use consolidated hook
+
   const { data: deployedContract } = useDeployedContractInfo({
     contractName,
-    chainId: selectedNetwork.id as AllowedChainIds,
+    chainId: chainId as AllowedChainIds, // Use chainId from hook
   });
 
-  const { query: queryOptions, watch, ...readContractConfig } = readConfig;
-  // set watch to true by default
+  const { query: queryOptions, watch, cacheTime, enabled, staleTime, ...readContractConfig } = readConfig;
   const defaultWatch = watch ?? true;
 
+  // Use the connected wallet address for the query key if required by function args
+  // This helps invalidate queries correctly when the address changes.
+  // Note: This assumes the address is typically the first arg if needed.
+  const queryKeyAddress =
+    args && Array.isArray(args) && args.length > 0 && typeof args[0] === "string" && args[0].startsWith("0x")
+      ? connectedAddress // Use connected address if first arg looks like an address
+      : undefined;
+
   const readContractHookRes = useReadContract({
-    chainId: selectedNetwork.id,
+    chainId: chainId, // Use chainId from hook
     functionName,
     address: deployedContract?.address,
     abi: deployedContract?.abi,
     args,
+    account: connectedAddress, // Pass account for better wagmi context
     ...(readContractConfig as any),
     query: {
-      enabled: !Array.isArray(args) || !args.some(arg => arg === undefined),
+      enabled:
+        enabled ?? // Respect explicit enabled flag
+        (isConnected && // Only run if connected
+          !!deployedContract && // Ensure contract is loaded
+          (!Array.isArray(args) || !args.some(arg => arg === undefined))), // Ensure args are valid
       ...queryOptions,
     },
   }) as Omit<ReturnType<typeof useReadContract>, "data" | "refetch"> & {
@@ -63,18 +76,33 @@ export const useScaffoldReadContract = <
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({
     watch: defaultWatch,
-    chainId: selectedNetwork.id,
+    chainId: chainId, // Use chainId from hook
     query: {
-      enabled: defaultWatch,
+      enabled: defaultWatch && !!readContractHookRes.query?.enabled, // Safely access enabled
     },
   });
 
+  // Invalidate query on block number change if watching
   useEffect(() => {
-    if (defaultWatch) {
-      queryClient.invalidateQueries({ queryKey: readContractHookRes.queryKey });
+    if (defaultWatch && readContractHookRes.query?.enabled) {
+      // Safely access enabled
+      // Invalidate based on a more specific query key if address is involved
+      const queryKey = queryKeyAddress
+        ? [readContractHookRes.queryKey[0], queryKeyAddress, readContractHookRes.queryKey[2]] // Simplified assumption
+        : readContractHookRes.queryKey;
+      queryClient.invalidateQueries({ queryKey });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blockNumber]);
+  }, [blockNumber, queryClient, defaultWatch, readContractHookRes.query?.enabled, queryKeyAddress]); // Safely access enabled
+
+  // Also invalidate query if the connected address changes and was part of the key
+  useEffect(() => {
+    if (queryKeyAddress) {
+      const queryKey = [readContractHookRes.queryKey[0], connectedAddress, readContractHookRes.queryKey[2]];
+      queryClient.invalidateQueries({ queryKey });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectedAddress, queryClient, queryKeyAddress]);
 
   return readContractHookRes;
 };

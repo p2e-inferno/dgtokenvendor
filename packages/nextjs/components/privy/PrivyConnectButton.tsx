@@ -14,7 +14,7 @@ import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
  * Custom Privy Connect Button designed to look and function like the RainbowKit button
  */
 export const PrivyConnectButton = () => {
-  const { login } = usePrivy();
+  const { login, logout, authenticated, user, linkWallet, linkEmail, linkTwitter, linkFarcaster } = usePrivy();
   const { address, activeWallet, isConnected, ready } = usePrivyWallet();
   const networkColor = useNetworkColor();
   const { targetNetwork } = useTargetNetwork();
@@ -35,6 +35,12 @@ export const PrivyConnectButton = () => {
       </button>
     );
   }
+
+  // Get the list of connected accounts
+  const connectedAccounts = user?.linkedAccounts || [];
+  const hasTwitter = connectedAccounts.some(account => account.type === "twitter");
+  const hasFarcaster = connectedAccounts.some(account => account.type === "farcaster");
+  const walletCount = connectedAccounts.filter(account => account.type === "wallet").length;
 
   return (
     <div className="flex items-center">
@@ -67,23 +73,89 @@ export const PrivyConnectButton = () => {
         {isDropdownOpen && (
           <ul
             tabIndex={0}
-            className="dropdown-content menu z-[2] p-2 mt-2 shadow-center shadow-accent bg-base-200 rounded-box gap-1"
+            className="dropdown-content menu z-[2] p-2 mt-2 shadow-center shadow-accent bg-base-200 rounded-box gap-1 w-64"
           >
+            <li className="menu-title">
+              <span>Connected Account</span>
+            </li>
             <li>
-              {blockExplorerAddressLink && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs">
+                  {address?.substring(0, 6)}...{address?.substring(address.length - 4)}
+                </span>
+                <button
+                  className="btn btn-xs btn-ghost"
+                  onClick={() => {
+                    navigator.clipboard.writeText(address || "");
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+            </li>
+            <li className="menu-title pt-2">
+              <span>Account Options</span>
+            </li>
+            {blockExplorerAddressLink && (
+              <li>
                 <Link href={blockExplorerAddressLink} target="_blank" rel="noopener noreferrer">
                   View on Block Explorer
                 </Link>
-              )}
-            </li>
+              </li>
+            )}
             <li>
+              <Link href="/profile" onClick={() => setIsDropdownOpen(false)}>
+                Manage Profile
+              </Link>
+            </li>
+            <li className="menu-title pt-2">
+              <span>Connect Accounts</span>
+            </li>
+            {!hasTwitter && (
+              <li>
+                <button
+                  onClick={() => {
+                    linkTwitter();
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Link Twitter Account
+                </button>
+              </li>
+            )}
+            {!hasFarcaster && (
+              <li>
+                <button
+                  onClick={() => {
+                    linkFarcaster();
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Link Farcaster Account
+                </button>
+              </li>
+            )}
+            {walletCount < 2 && (
+              <li>
+                <button
+                  onClick={() => {
+                    linkWallet();
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Link External Wallet
+                </button>
+              </li>
+            )}
+            <li className="border-t border-base-300 mt-2 pt-2">
               <button
-                className="menu-item text-error"
+                className="text-error"
                 type="button"
                 onClick={() => {
                   setIsDropdownOpen(false);
                   localStorage.removeItem("connectedWalletType");
-                  window.location.reload();
+                  logout();
                 }}
               >
                 Disconnect
