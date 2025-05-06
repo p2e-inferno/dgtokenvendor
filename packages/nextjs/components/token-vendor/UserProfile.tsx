@@ -1,9 +1,17 @@
 import React from "react";
+import { RecentActivity } from "./RecentActivity";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { UserStage } from "~~/types/dgtoken-vendor";
+
+const stageLabels: Record<UserStage, string> = {
+  [UserStage.PLEB]: "Pleb",
+  [UserStage.HUSTLER]: "Hustler",
+  [UserStage.OG]: "OG Trader",
+};
 
 export const UserProfile = () => {
   const { address } = useAccount();
@@ -39,6 +47,12 @@ export const UserProfile = () => {
   const { data: keyCollection } = useScaffoldReadContract({
     contractName: "DGTokenVendor",
     functionName: "getFirstValidCollection",
+    args: [address],
+  });
+
+  const { data: userState } = useScaffoldReadContract({
+    contractName: "DGTokenVendor",
+    functionName: "getUserState",
     args: [address],
   });
 
@@ -113,52 +127,56 @@ export const UserProfile = () => {
               <h3 className="text-xl font-bold mb-4">Game Statistics</h3>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full justify-between">
                   <div className="stat-title">Fuel Level</div>
                   <div className="flex-grow flex flex-col items-start justify-center py-2">
                     <div
                       className="radial-progress text-primary"
-                      style={{ "--value": 75, "--size": "4rem", "--thickness": "4px" } as any}
+                      style={
+                        {
+                          "--value": userState?.fuel ? Number(userState.fuel) : 0,
+                          "--size": "4rem",
+                          "--thickness": "4px",
+                        } as any
+                      }
                       role="progressbar"
                     >
-                      75%
+                      {userState?.fuel ? Number(userState.fuel) : 0}%
                     </div>
                   </div>
                   <div className="stat-desc mt-2 whitespace-normal">Energy remaining for transactions</div>
                 </div>
 
-                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full justify-between">
                   <div className="stat-title">Points</div>
-                  <div className="flex-grow flex items-start justify-start">
-                    <div className="text-3xl font-bold text-accent">1,250</div>
+                  <div className="flex-grow flex items-center justify-start">
+                    <div className="text-3xl font-bold text-accent">
+                      {userState?.points ? Number(userState.points).toLocaleString() : "0"}
+                    </div>
                   </div>
                   <div className="stat-desc mt-2 whitespace-normal">Earned through transactions</div>
                 </div>
 
-                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full justify-between">
                   <div className="stat-title">Stage</div>
-                  <div className="flex-grow flex items-start justify-start">
-                    <div className="text-2xl font-bold text-secondary">Level 3</div>
+                  <div className="flex-grow flex items-center justify-start">
+                    <div className="text-2xl font-bold text-secondary">
+                      {userState?.stage !== undefined && stageLabels[userState.stage as UserStage]
+                        ? stageLabels[userState.stage as UserStage]
+                        : "N/A"}
+                    </div>
                   </div>
-                  <div className="stat-desc mt-2 whitespace-normal">Intermediate Trader</div>
+                  <div className="stat-desc mt-2 whitespace-normal">
+                    {userState?.stage !== undefined && stageLabels[userState.stage as UserStage]
+                      ? `Current Trader Level: ${stageLabels[userState.stage as UserStage]}`
+                      : "Loading..."}
+                  </div>
                 </div>
 
-                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full">
+                <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full justify-between">
                   <div className="stat-title">Reputation</div>
-                  <div className="flex-grow flex items-start justify-start py-2">
-                    <div className="rating rating-md">
-                      {[...Array(5)].map((_, i) => (
-                        <input
-                          key={i}
-                          type="radio"
-                          name="rating-7"
-                          className={`mask mask-star-2 ${i < 3 ? "bg-orange-400" : "bg-base-300"}`}
-                          checked={i < 3}
-                          readOnly
-                          disabled
-                        />
-                      ))}
-                    </div>
+                  <div className="flex-grow flex items-center justify-start">
+                    <div className="text-sm text-base-content/70">Coming Soon</div>
                   </div>
                   <div className="stat-desc mt-2 whitespace-normal">Based on transaction history</div>
                 </div>
@@ -168,50 +186,8 @@ export const UserProfile = () => {
             <div className="bg-base-200 p-6 rounded-xl">
               <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
 
-              <div className="overflow-x-auto">
-                <table className="table table-zebra w-full">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Buy</td>
-                      <td>25 {dgTokenSymbol}</td>
-                      <td>
-                        <span className="badge badge-success">Complete</span>
-                      </td>
-                      <td>2 min ago</td>
-                    </tr>
-                    <tr>
-                      <td>Sell</td>
-                      <td>10 {dgTokenSymbol}</td>
-                      <td>
-                        <span className="badge badge-success">Complete</span>
-                      </td>
-                      <td>1 hour ago</td>
-                    </tr>
-                    <tr>
-                      <td>Buy</td>
-                      <td>50 {dgTokenSymbol}</td>
-                      <td>
-                        <span className="badge badge-success">Complete</span>
-                      </td>
-                      <td>3 hours ago</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <RecentActivity userAddress={address} dgTokenSymbol={dgTokenSymbol as string | undefined} />
             </div>
-          </div>
-
-          <div className="card-actions justify-end mt-4">
-            <button className="btn btn-primary">Export Data</button>
-            <button className="btn btn-outline">Settings</button>
           </div>
         </div>
       </div>
