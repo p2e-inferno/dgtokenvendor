@@ -22,3 +22,8 @@ export interface UseLightUpTransactionProps {
   vendorContractName: VendorContractName;
   tokenSymbol: string;
 }
+export interface RecentActivityProps {
+  userAddress?: string;
+  dgTokenSymbol?: string;
+  periodDays?: number; // Period in days to look back for events
+}

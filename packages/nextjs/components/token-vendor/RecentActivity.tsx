@@ -4,7 +4,9 @@ import { formatDistanceToNow } from "date-fns";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
+import { useFromBlockForPeriod } from "~~/hooks/useFromBlockForPeriod";
 import { UserStage } from "~~/types/dgtoken-vendor";
+import { RecentActivityProps } from "~~/types/dgtoken-vendor";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 const stageLabels: Record<UserStage, string> = {
@@ -13,37 +15,33 @@ const stageLabels: Record<UserStage, string> = {
   [UserStage.OG]: "OG Trader",
 };
 
-interface RecentActivityProps {
-  userAddress?: string;
-  dgTokenSymbol?: string;
-}
-
 interface ProcessedEvent {
-  id: string; // Unique ID for React key, e.g., transactionHash + logIndex
+  id: string;
   type: string;
-  conciseDetails: string; // For potential future use like tooltips
+  conciseDetails: string;
   amount?: string;
-  status: React.ReactNode; // To show 'Complete' or similar
+  status: React.ReactNode;
   time: string;
   txHash: string;
   blockTimestamp: bigint;
-  log: any; // Store the raw log for debugging or more detailed views if needed
+  log: any;
 }
 
-export const RecentActivity = ({ userAddress, dgTokenSymbol }: RecentActivityProps) => {
+export const RecentActivity = ({ userAddress, dgTokenSymbol, periodDays = 30 }: RecentActivityProps) => {
   const { chain } = useAccount();
+  const { fromBlock, isLoading: isLoadingBlock } = useFromBlockForPeriod(periodDays);
   const [allProcessedEvents, setAllProcessedEvents] = useState<ProcessedEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const commonEventConfig = {
     contractName: "DGTokenVendor" as const,
-    fromBlock: 0n, // Consider using a more recent block for performance in production
-    filters: undefined, // Default, will be overridden for user-specific events
+    fromBlock,
+    filters: undefined, // Default, overridden for user-specific events
     blockData: true as const,
     transactionData: false as const,
     receiptData: false as const,
-    watch: false, // Set to true if you want live updates, might be performance intensive
-    enabled: !!userAddress, // Only enable if userAddress is present
+    watch: false, // Set to true for live updates
+    enabled: !!userAddress && !isLoadingBlock,
   };
 
   // Lit Events
@@ -76,34 +74,16 @@ export const RecentActivity = ({ userAddress, dgTokenSymbol }: RecentActivityPro
 
   // Effect to process and combine events once data is loaded
   useEffect(() => {
-    console.log("[RecentActivity] useEffect triggered. User Address:", userAddress);
-    console.log("[RecentActivity] Loading states:", {
-      lit: isLoadingLit,
-      stageUpgraded: isLoadingStageUpgraded,
-      tokensPurchased: isLoadingTokensPurchased,
-      tokensSold: isLoadingTokensSold,
-    });
-
-    if (isLoadingLit || isLoadingStageUpgraded || isLoadingTokensPurchased || isLoadingTokensSold) {
+    if (isLoadingBlock || isLoadingLit || isLoadingStageUpgraded || isLoadingTokensPurchased || isLoadingTokensSold) {
       setIsLoading(true);
-      console.log("[RecentActivity] Still loading one or more event types.");
       return;
     }
 
-    console.log("[RecentActivity] All event hooks have loaded.");
-    console.log("[RecentActivity] Raw litEventsData:", litEventsData);
-    console.log("[RecentActivity] Raw stageUpgradedEventsData:", stageUpgradedEventsData);
-    console.log("[RecentActivity] Raw tokensPurchasedEventsData:", tokensPurchasedEventsData);
-    console.log("[RecentActivity] Raw tokensSoldEventsData:", tokensSoldEventsData);
-
     const processEvents = () => {
-      console.log("[RecentActivity] Starting processEvents function.");
       const newProcessedEvents: ProcessedEvent[] = [];
 
-      // Directly use the data if it's an array, otherwise, it might be undefined or needs flattening if paginated structure is sometimes returned
       const getEventArray = (data: any, name: string): any[] => {
         if (Array.isArray(data)) {
-          console.log(`[RecentActivity] Event data for ${name} is already an array:`, data);
           return data;
         }
         return [];
@@ -220,6 +200,7 @@ export const RecentActivity = ({ userAddress, dgTokenSymbol }: RecentActivityPro
     stageUpgradedEventsData,
     tokensPurchasedEventsData,
     tokensSoldEventsData,
+    isLoadingBlock,
     isLoadingLit,
     isLoadingStageUpgraded,
     isLoadingTokensPurchased,

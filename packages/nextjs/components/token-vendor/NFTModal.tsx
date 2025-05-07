@@ -29,7 +29,7 @@ export const NFTModal: React.FC<NFTModalProps> = ({ nft, isOpen, onClose }) => {
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            onClick={e => e.stopPropagation()}
+            onClick={(e: any) => e.stopPropagation()}
           >
             <button className="btn btn-sm btn-circle absolute right-2 top-2 z-10" onClick={onClose}>
               <XMarkIcon className="h-5 w-5" />

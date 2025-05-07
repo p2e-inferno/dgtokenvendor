@@ -24,7 +24,7 @@ export const NFTCollectionsModal: React.FC<NFTCollectionsModalProps> = ({ isOpen
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            onClick={e => e.stopPropagation()}
+            onClick={(e: any) => e.stopPropagation()}
           >
             <div className="sticky top-0 z-10 bg-base-100 p-4 border-b border-base-300 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-primary">Whitelisted NFT Collections</h2>

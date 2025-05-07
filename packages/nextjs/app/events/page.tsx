@@ -1,124 +1,389 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
 import type { NextPage } from "next";
 import { formatEther } from "viem";
+import { useAccount } from "wagmi";
 import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
+import { useFromBlockForPeriod } from "~~/hooks/useFromBlockForPeriod";
+import { UserStage } from "~~/types/dgtoken-vendor";
+import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
+
+const stageLabels: Record<UserStage, string> = {
+  [UserStage.PLEB]: "Pleb",
+  [UserStage.HUSTLER]: "Hustler",
+  [UserStage.OG]: "OG Trader",
+};
+
+interface ProcessedEvent {
+  id: string;
+  type: string;
+  args: any;
+  time: string;
+  txHash: string;
+  blockTimestamp: bigint;
+}
+
+const EVENTS_PER_PAGE = 20;
+
+const HISTORY_DAYS = 60;
 
 const Events: NextPage = () => {
-  // Token Transfer Events for DG Token
-  const { data: dgTokenTransferEvents, isLoading: isDgTokenEventsLoading } = useScaffoldEventHistory({
-    contractName: "DGToken" as const,
-    eventName: "Transfer" as const,
-    fromBlock: 0n,
+  const { chain } = useAccount();
+  const { fromBlock, isLoading: isLoadingBlock } = useFromBlockForPeriod(HISTORY_DAYS);
+  const [allEvents, setAllEvents] = useState<ProcessedEvent[]>([]);
+  const [displayedEvents, setDisplayedEvents] = useState<ProcessedEvent[]>([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>("All");
+
+  const loaderRef = useRef<HTMLDivElement>(null);
+  const commonEventConfig = {
+    contractName: "DGTokenVendor" as const,
+    fromBlock,
+    blockData: true as const,
+    transactionData: false as const,
+    receiptData: false as const,
+    watch: false,
+    enabled: !isLoadingBlock,
+  };
+
+  // Buy Events (TokensPurchased)
+  const { data: buyEventsData, isLoading: isLoadingBuy } = useScaffoldEventHistory({
+    ...commonEventConfig,
+    eventName: "TokensPurchased" as const,
   });
 
-  // Token Transfer Events for UP Token
-  const { data: upTokenTransferEvents, isLoading: isUpTokenEventsLoading } = useScaffoldEventHistory({
-    contractName: "UnlockProtocolToken" as const,
-    eventName: "Transfer" as const,
-    fromBlock: 0n,
+  // Sell Events (TokensSold)
+  const { data: sellEventsData, isLoading: isLoadingSell } = useScaffoldEventHistory({
+    ...commonEventConfig,
+    eventName: "TokensSold" as const,
   });
+
+  // Light Up Events (Lit)
+  const { data: litEventsData, isLoading: isLoadingLit } = useScaffoldEventHistory({
+    ...commonEventConfig,
+    eventName: "Lit" as const,
+  });
+
+  // Upgrade Events (StageUpgraded)
+  const { data: upgradeEventsData, isLoading: isLoadingUpgrade } = useScaffoldEventHistory({
+    ...commonEventConfig,
+    eventName: "StageUpgraded" as const,
+  });
+
+  // Check if the loader element is visible
+  const handleScroll = useCallback(() => {
+    if (!loaderRef.current || !hasMore || isLoading) return;
+
+    const { top } = loaderRef.current.getBoundingClientRect();
+    const isVisible = top < window.innerHeight;
+
+    if (isVisible) {
+      const nextPage = page + 1;
+      const nextEvents = filterEventsByTab(allEvents, activeTab).slice(0, nextPage * EVENTS_PER_PAGE);
+
+      setDisplayedEvents(nextEvents);
+      setPage(nextPage);
+      setHasMore(nextEvents.length < filterEventsByTab(allEvents, activeTab).length);
+    }
+  }, [hasMore, isLoading, page, allEvents, activeTab]);
+
+  // Set up scroll event listener
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (isLoadingBlock || isLoadingBuy || isLoadingSell || isLoadingLit || isLoadingUpgrade) {
+      setIsLoading(true);
+      return;
+    }
+
+    const processEvents = () => {
+      const newProcessedEvents: ProcessedEvent[] = [];
+
+      const getEventArray = (data: any): any[] => {
+        return Array.isArray(data) ? data : [];
+      };
+
+      // Process buy events
+      getEventArray(buyEventsData).forEach((eventLog: any) => {
+        const { args, blockHash, transactionHash, logIndex } = eventLog;
+        if (args && blockHash && transactionHash && eventLog.blockData) {
+          newProcessedEvents.push({
+            id: `buy-${transactionHash}-${logIndex}`,
+            type: "Buy",
+            args,
+            time: eventLog.blockData?.timestamp
+              ? formatDistanceToNow(new Date(Number(eventLog.blockData.timestamp) * 1000), { addSuffix: true })
+              : "N/A",
+            txHash: transactionHash,
+            blockTimestamp: eventLog.blockData?.timestamp || 0n,
+          });
+        }
+      });
+
+      // Process sell events
+      getEventArray(sellEventsData).forEach((eventLog: any) => {
+        const { args, blockHash, transactionHash, logIndex } = eventLog;
+        if (args && blockHash && transactionHash && eventLog.blockData) {
+          newProcessedEvents.push({
+            id: `sell-${transactionHash}-${logIndex}`,
+            type: "Sell",
+            args,
+            time: eventLog.blockData?.timestamp
+              ? formatDistanceToNow(new Date(Number(eventLog.blockData.timestamp) * 1000), { addSuffix: true })
+              : "N/A",
+            txHash: transactionHash,
+            blockTimestamp: eventLog.blockData?.timestamp || 0n,
+          });
+        }
+      });
+
+      // Process light up events
+      getEventArray(litEventsData).forEach((eventLog: any) => {
+        const { args, blockHash, transactionHash, logIndex } = eventLog;
+        if (args && blockHash && transactionHash && eventLog.blockData) {
+          newProcessedEvents.push({
+            id: `lit-${transactionHash}-${logIndex}`,
+            type: "Light Up",
+            args,
+            time: eventLog.blockData?.timestamp
+              ? formatDistanceToNow(new Date(Number(eventLog.blockData.timestamp) * 1000), { addSuffix: true })
+              : "N/A",
+            txHash: transactionHash,
+            blockTimestamp: eventLog.blockData?.timestamp || 0n,
+          });
+        }
+      });
+
+      // Process upgrade events
+      getEventArray(upgradeEventsData).forEach((eventLog: any) => {
+        const { args, blockHash, transactionHash, logIndex } = eventLog;
+        if (args && blockHash && transactionHash && eventLog.blockData) {
+          newProcessedEvents.push({
+            id: `upgrade-${transactionHash}-${logIndex}`,
+            type: "Upgrade",
+            args,
+            time: eventLog.blockData?.timestamp
+              ? formatDistanceToNow(new Date(Number(eventLog.blockData.timestamp) * 1000), { addSuffix: true })
+              : "N/A",
+            txHash: transactionHash,
+            blockTimestamp: eventLog.blockData?.timestamp || 0n,
+          });
+        }
+      });
+
+      // Sort events by block timestamp descending (newest first)
+      newProcessedEvents.sort((a, b) => Number(b.blockTimestamp) - Number(a.blockTimestamp));
+
+      setAllEvents(newProcessedEvents);
+      setDisplayedEvents(filterEventsByTab(newProcessedEvents, activeTab).slice(0, EVENTS_PER_PAGE));
+      setIsLoading(false);
+      setHasMore(filterEventsByTab(newProcessedEvents, activeTab).length > EVENTS_PER_PAGE);
+    };
+
+    processEvents();
+  }, [
+    buyEventsData,
+    sellEventsData,
+    litEventsData,
+    upgradeEventsData,
+    isLoadingBlock,
+    isLoadingBuy,
+    isLoadingSell,
+    isLoadingLit,
+    isLoadingUpgrade,
+    activeTab,
+  ]);
+
+  // Filter events based on active tab
+  const filterEventsByTab = (events: ProcessedEvent[], tab: string): ProcessedEvent[] => {
+    if (tab === "All") return events;
+    return events.filter(event => event.type === tab);
+  };
+
+  // Handle tab change
+  const changeTab = (tab: string) => {
+    setActiveTab(tab);
+    setPage(1);
+    const filteredEvents = filterEventsByTab(allEvents, tab);
+    setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_PAGE));
+    setHasMore(filteredEvents.length > EVENTS_PER_PAGE);
+  };
+
+  // Generate block explorer link safely
+  const getExplorerLink = (txHash: string) => {
+    if (!chain) return "#";
+    try {
+      return getBlockExplorerTxLink(chain.id, txHash);
+    } catch (error) {
+      console.error("Error generating block explorer link:", error);
+      return "#";
+    }
+  };
 
   return (
     <div className="flex items-center flex-col flex-grow pt-10">
       <div className="text-center mb-8 max-w-2xl">
-        <h1 className="text-4xl font-bold text-primary mb-4">Token Events</h1>
-        <p className="text-base-content/70 text-lg">View the history of token transfers on the blockchain.</p>
+        <h1 className="text-4xl font-bold text-primary mb-4">DGTokenVendor Events</h1>
+        <p className="text-base-content/70 text-lg">
+          View the history of buy, sell, light up, and upgrade events on the vendor contract.
+        </p>
       </div>
 
-      {/* DG Token Transfer Events */}
-      <div className="w-full max-w-6xl mb-12">
-        <div className="text-center mb-4">
-          <span className="block text-2xl font-bold text-secondary">DG Token Transfers</span>
-        </div>
-        {isDgTokenEventsLoading ? (
-          <div className="flex justify-center items-center mt-8">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        ) : (
-          <div className="overflow-x-auto shadow-lg">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th className="bg-secondary text-secondary-content">From</th>
-                  <th className="bg-secondary text-secondary-content">To</th>
-                  <th className="bg-secondary text-secondary-content">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!dgTokenTransferEvents || dgTokenTransferEvents.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center">
-                      No events found
-                    </td>
-                  </tr>
-                ) : (
-                  dgTokenTransferEvents?.map((event: any, index: number) => {
-                    const { from, to, value } = event.args || { from: "", to: "", value: 0n };
-                    return (
-                      <tr key={index}>
-                        <td className="text-center">
-                          <Address address={from || ""} />
-                        </td>
-                        <td className="text-center">
-                          <Address address={to || ""} />
-                        </td>
-                        <td>{value ? formatEther(value) : "0"}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Tab Navigation */}
+      <div className="tabs tabs-boxed mb-6 w-full max-w-6xl flex justify-center">
+        <a className={`tab ${activeTab === "All" ? "tab-active" : ""}`} onClick={() => changeTab("All")}>
+          All Events
+        </a>
+        <a className={`tab ${activeTab === "Buy" ? "tab-active" : ""}`} onClick={() => changeTab("Buy")}>
+          Buy Events
+        </a>
+        <a className={`tab ${activeTab === "Sell" ? "tab-active" : ""}`} onClick={() => changeTab("Sell")}>
+          Sell Events
+        </a>
+        <a className={`tab ${activeTab === "Light Up" ? "tab-active" : ""}`} onClick={() => changeTab("Light Up")}>
+          Light Up Events
+        </a>
+        <a className={`tab ${activeTab === "Upgrade" ? "tab-active" : ""}`} onClick={() => changeTab("Upgrade")}>
+          Upgrade Events
+        </a>
       </div>
 
-      {/* UP Token Transfer Events */}
+      {/* Events Table */}
       <div className="w-full max-w-6xl">
-        <div className="text-center mb-4">
-          <span className="block text-2xl font-bold text-primary">UP Token Transfers</span>
-        </div>
-        {isUpTokenEventsLoading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center mt-8">
             <span className="loading loading-spinner loading-lg"></span>
           </div>
+        ) : displayedEvents.length === 0 ? (
+          <div className="text-center p-8 bg-base-200 rounded-lg">
+            <p className="text-xl">No events found</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto shadow-lg">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th className="bg-primary text-primary-content">From</th>
-                  <th className="bg-primary text-primary-content">To</th>
-                  <th className="bg-primary text-primary-content">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!upTokenTransferEvents || upTokenTransferEvents.length === 0 ? (
+          <div>
+            <div className="overflow-x-auto shadow-lg rounded-lg">
+              <table className="table table-zebra w-full">
+                <thead>
                   <tr>
-                    <td colSpan={3} className="text-center">
-                      No events found
-                    </td>
+                    <th className="bg-primary text-primary-content">Type</th>
+                    <th className="bg-primary text-primary-content">Details</th>
+                    <th className="bg-primary text-primary-content">Time</th>
+                    <th className="bg-primary text-primary-content">Tx</th>
                   </tr>
-                ) : (
-                  upTokenTransferEvents?.map((event: any, index: number) => {
-                    const { from, to, value } = event.args || { from: "", to: "", value: 0n };
+                </thead>
+                <tbody>
+                  {displayedEvents.map(event => {
+                    let details;
+
+                    switch (event.type) {
+                      case "Buy":
+                        details = (
+                          <>
+                            <div>
+                              <span className="font-medium">Buyer:</span> <Address address={event.args.buyer} />
+                            </div>
+                            <div>
+                              <span className="font-medium">Amount:</span>{" "}
+                              {formatEther(event.args.swapTokenAmount || 0n)} DG
+                            </div>
+                            <div>
+                              <span className="font-medium">Paid:</span> {formatEther(event.args.baseTokenAmount || 0n)}{" "}
+                              DAPPX
+                            </div>
+                          </>
+                        );
+                        break;
+                      case "Sell":
+                        details = (
+                          <>
+                            <div>
+                              <span className="font-medium">Seller:</span> <Address address={event.args.seller} />
+                            </div>
+                            <div>
+                              <span className="font-medium">Amount:</span>{" "}
+                              {formatEther(event.args.swapTokenAmount || 0n)} DG
+                            </div>
+                            <div>
+                              <span className="font-medium">Received:</span>{" "}
+                              {formatEther(event.args.baseTokenAmount || 0n)} DAPPX
+                            </div>
+                          </>
+                        );
+                        break;
+                      case "Light Up":
+                        details = (
+                          <>
+                            <div>
+                              <span className="font-medium">User:</span> <Address address={event.args.user} />
+                            </div>
+                            <div>
+                              <span className="font-medium">Burned:</span> {formatEther(event.args.burnAmount || 0n)} UP
+                            </div>
+                            <div>
+                              <span className="font-medium">New Fuel:</span> {Number(event.args.newFuel).toString()}
+                            </div>
+                          </>
+                        );
+                        break;
+                      case "Upgrade":
+                        details = (
+                          <>
+                            <div>
+                              <span className="font-medium">User:</span> <Address address={event.args.user} />
+                            </div>
+                            <div>
+                              <span className="font-medium">New Stage:</span>{" "}
+                              {stageLabels[event.args.newStage as UserStage] || `Stage ${event.args.newStage}`}
+                            </div>
+                          </>
+                        );
+                        break;
+                      default:
+                        details = <div>Unknown event type</div>;
+                    }
+
                     return (
-                      <tr key={index}>
-                        <td className="text-center">
-                          <Address address={from || ""} />
+                      <tr key={event.id}>
+                        <td>
+                          <div className="font-medium">
+                            {event.type === "Buy" && <span className="text-green-600">💰 Buy</span>}
+                            {event.type === "Sell" && <span className="text-red-600">💸 Sell</span>}
+                            {event.type === "Light Up" && <span className="text-yellow-600">🔥 Light Up</span>}
+                            {event.type === "Upgrade" && <span className="text-purple-600">⭐ Upgrade</span>}
+                          </div>
                         </td>
-                        <td className="text-center">
-                          <Address address={to || ""} />
+                        <td>{details}</td>
+                        <td>{event.time}</td>
+                        <td>
+                          <a
+                            href={getExplorerLink(event.txHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View Tx
+                          </a>
                         </td>
-                        <td>{value ? formatEther(value) : "0"}</td>
                       </tr>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Infinite scroll loading indicator */}
+            {hasMore && (
+              <div ref={loaderRef} className="flex justify-center items-center py-4 mt-4">
+                <span className="loading loading-spinner loading-md"></span>
+              </div>
+            )}
           </div>
         )}
       </div>
