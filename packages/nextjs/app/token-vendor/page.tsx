@@ -21,12 +21,6 @@ const TokenVendor: NextPage = () => {
     args: [address],
   });
 
-  const { data: yourSwapTokenBalance } = useScaffoldReadContract({
-    contractName: "DAPPX",
-    functionName: "balanceOf",
-    args: [address],
-  });
-
   const handleOpenNFTModal = () => {
     setIsNFTModalOpen(true);
   };
