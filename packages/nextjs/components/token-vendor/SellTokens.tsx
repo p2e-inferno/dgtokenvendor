@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { useTokenTransaction } from "~~/hooks/useTokenTransaction";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useTokenAllowance } from "~~/hooks/useTokenAllowance";
+import { notification } from "~~/utils/scaffold-eth/notification";
+import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
 import { calculateTokenConversion } from "~~/utils/token-vendor/calculations";
 
 export const SellTokens = () => {
   const [tokensToSell, setTokensToSell] = useState<string>("");
+  const [isTransactionLoading, setIsTransactionLoading] = useState(false);
 
   const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
@@ -28,31 +31,47 @@ export const SellTokens = () => {
     functionName: "getFeeConfig",
   });
 
-  const { isApproved, isApprovalLoading, isTransactionLoading, handleApprove, handleTransaction } = useTokenTransaction(
+  const { writeContractAsync: sellTokens } = useScaffoldWriteContract("DGTokenVendor");
+
+  const { baseToken, approveBaseToken, hasSufficientBaseTokenAllowance, refreshBaseTokenAllowance } = useTokenAllowance(
     {
-      tokenContractName: "DGToken",
       vendorContractName: "DGTokenVendor",
-      tokenSymbol: (dgTokenSymbol as string) || "DGToken",
     },
   );
 
+  const hasAllowanceForAmount = hasSufficientBaseTokenAllowance(tokensToSell);
+
   const handleApproveTokens = async () => {
     if (tokensToSell) {
-      await handleApprove(tokensToSell);
+      await approveBaseToken();
+      await refreshBaseTokenAllowance();
     }
   };
 
   const handleSellTokens = async () => {
-    if (tokensToSell) {
-      const success = await handleTransaction("sell", tokensToSell);
-      if (success) {
-        setTokensToSell("");
-      }
+    if (!tokensToSell) return;
+
+    setIsTransactionLoading(true);
+    try {
+      await sellTokens({
+        functionName: "sellTokens",
+        args: [multiplyTo1e18(tokensToSell)],
+      });
+      notification.success(`Successfully sold ${tokensToSell} ${baseToken.symbol || "tokens"}!`);
+      setTokensToSell("");
+      await refreshBaseTokenAllowance();
+      return true;
+    } catch (err) {
+      console.error("Error selling tokens:", err);
+      notification.error("Failed to sell tokens");
+      return false;
+    } finally {
+      setIsTransactionLoading(false);
     }
   };
 
-  // Input is disabled if either approval or transaction is in progress
-  const isInputDisabled = isApprovalLoading || isTransactionLoading;
+  const isInputDisabled = baseToken.isApproving || isTransactionLoading;
+  const showApproveButton = !hasAllowanceForAmount && !!tokensToSell && parseFloat(tokensToSell) > 0;
 
   return (
     <div className="card bg-base-100 shadow-xl border border-secondary/20">
@@ -99,20 +118,21 @@ export const SellTokens = () => {
         </div>
 
         <div className="card-actions justify-end">
-          <button
-            className={`btn ${isApproved ? "btn-disabled" : "btn-accent"} ${isApprovalLoading ? "loading" : ""}`}
-            onClick={handleApproveTokens}
-            disabled={isApproved || !tokensToSell || isInputDisabled}
-          >
-            Approve {dgTokenSymbol}
-          </button>
-
+          {showApproveButton && (
+            <button
+              className={`btn btn-accent ${baseToken.isApproving ? "loading" : ""}`}
+              onClick={handleApproveTokens}
+              disabled={isInputDisabled || baseToken.isApproving}
+            >
+              {baseToken.isApproving ? "Approving..." : `Approve ${dgTokenSymbol}`}
+            </button>
+          )}
           <button
             className={`btn btn-secondary ${isTransactionLoading ? "loading" : ""}`}
             onClick={handleSellTokens}
-            disabled={!isApproved || !tokensToSell || isInputDisabled}
+            disabled={!hasAllowanceForAmount || !tokensToSell || parseFloat(tokensToSell) <= 0 || isInputDisabled}
           >
-            Sell Tokens
+            {isTransactionLoading ? "Processing..." : "Sell Tokens"}
           </button>
         </div>
       </div>

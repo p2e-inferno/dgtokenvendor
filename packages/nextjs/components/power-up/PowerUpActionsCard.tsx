@@ -23,7 +23,7 @@ export const PowerUpActionsCard = ({
   nextStageLabel,
   nextStageConfig,
   canUpgrade,
-  tokenSymbol = "DGT",
+  tokenSymbol = "DAPPX",
 }: PowerUpActionsCardProps) => {
   return (
     <div className="card bg-base-200 shadow-xl border border-secondary/30">

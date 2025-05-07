@@ -6,3 +6,19 @@ export enum UserStage {
   HUSTLER = 1,
   OG = 2,
 }
+export interface StageConfig {
+  burnAmount: bigint;
+  upgradePointsThreshold: bigint;
+  upgradeFuelThreshold: bigint;
+  fuelRate: bigint;
+  pointsAwarded: bigint;
+  qualifyingBuyThreshold: bigint;
+  maxSellBps: bigint;
+  dailyLimitMultiplier: bigint;
+}
+export type TokenType = "baseToken" | "swapToken";
+export interface UseLightUpTransactionProps {
+  tokenContractName: TokenContractName;
+  vendorContractName: VendorContractName;
+  tokenSymbol: string;
+}

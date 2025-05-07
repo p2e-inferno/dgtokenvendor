@@ -2,27 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PowerUpActionsCard, StageBenefitsSection, UserStatusCard } from "./index";
+import { PowerUpActionsCard, StageBenefitsSection, UserStatusCard } from "../../components/power-up/index";
 import { useAccount } from "wagmi";
 import { FireIcon, SparklesIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-
-enum UserStage {
-  PLEB = 0,
-  HUSTLER = 1,
-  OG = 2,
-}
-
-interface StageConfig {
-  burnAmount: bigint;
-  upgradePointsThreshold: bigint;
-  upgradeFuelThreshold: bigint;
-  fuelRate: bigint;
-  pointsAwarded: bigint;
-  qualifyingBuyThreshold: bigint;
-  maxSellBps: bigint;
-  dailyLimitMultiplier: bigint;
-}
+import { StageConfig, UserStage } from "~~/types/dgtoken-vendor";
 
 const PowerUpPage = () => {
   const { address, isConnected } = useAccount();

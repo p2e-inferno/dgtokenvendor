@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { useDeployedContractInfo, useScaffoldWriteContract } from "./scaffold-eth";
 import { Address } from "viem";
-import { TokenContractName, VendorContractName } from "~~/types/dgtoken-vendor";
+import { UseLightUpTransactionProps } from "~~/types/dgtoken-vendor";
 import { notification } from "~~/utils/scaffold-eth/notification";
 import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
-
-interface UseLightUpTransactionProps {
-  tokenContractName: TokenContractName;
-  vendorContractName: VendorContractName;
-  tokenSymbol: string;
-}
 
 export const useLightUpTransaction = ({
   tokenContractName,

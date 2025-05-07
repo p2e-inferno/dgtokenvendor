@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { IntegerInput } from "~~/components/token-vendor/IntegerInput";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { useTokenTransaction } from "~~/hooks/useTokenTransaction";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useTokenAllowance } from "~~/hooks/useTokenAllowance";
+import { notification } from "~~/utils/scaffold-eth/notification";
+import { multiplyTo1e18 } from "~~/utils/scaffold-eth/priceInWei";
 import { calculateTokenConversion } from "~~/utils/token-vendor/calculations";
 
 export const BuyTokens = () => {
   const [tokensToBuy, setTokensToBuy] = useState<string>("");
+  const [isTransactionLoading, setIsTransactionLoading] = useState(false);
 
   const { data: dgTokenSymbol } = useScaffoldReadContract({
     contractName: "DGToken",
@@ -28,33 +31,48 @@ export const BuyTokens = () => {
     functionName: "getFeeConfig",
   });
 
-  const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
+  const { writeContractAsync: buyTokens } = useScaffoldWriteContract("DGTokenVendor");
 
-  const { isApproved, isApprovalLoading, isTransactionLoading, handleApprove, handleTransaction } = useTokenTransaction(
+  const { swapToken, approveSwapToken, hasSufficientSwapTokenAllowance, refreshSwapTokenAllowance } = useTokenAllowance(
     {
-      tokenContractName: "DAPPX",
       vendorContractName: "DGTokenVendor",
-      tokenSymbol: (upTokenSymbol as string) || "DAPPX",
     },
   );
 
+  const exchangeRateStr = exchangeRate !== undefined ? Number(exchangeRate).toString() : "0";
+  const hasAllowanceForAmount = hasSufficientSwapTokenAllowance(tokensToBuy);
+
   const handleApproveTokens = async () => {
     if (tokensToBuy) {
-      await handleApprove(tokensToBuy);
+      await approveSwapToken();
+      await refreshSwapTokenAllowance();
     }
   };
 
   const handleBuyTokens = async () => {
-    if (tokensToBuy) {
-      const success = await handleTransaction("buy", tokensToBuy);
-      if (success) {
-        setTokensToBuy("");
-      }
+    if (!tokensToBuy) return;
+
+    setIsTransactionLoading(true);
+    try {
+      await buyTokens({
+        functionName: "buyTokens",
+        args: [multiplyTo1e18(tokensToBuy)],
+      });
+      notification.success(`Successfully purchased ${tokensToBuy} ${swapToken.symbol || "tokens"}!`);
+      setTokensToBuy("");
+      await refreshSwapTokenAllowance();
+      return true;
+    } catch (err) {
+      console.error("Error buying tokens:", err);
+      notification.error("Failed to buy tokens");
+      return false;
+    } finally {
+      setIsTransactionLoading(false);
     }
   };
 
-  // Input is disabled if either approval or transaction is in progress
-  const isInputDisabled = isApprovalLoading || isTransactionLoading;
+  const isInputDisabled = swapToken.isApproving || isTransactionLoading;
+  const showApproveButton = !hasAllowanceForAmount && !!tokensToBuy && parseFloat(tokensToBuy) > 0;
 
   return (
     <div className="card bg-base-100 shadow-xl border border-primary/20">
@@ -101,20 +119,21 @@ export const BuyTokens = () => {
         </div>
 
         <div className="card-actions justify-end">
-          <button
-            className={`btn ${isApproved ? "btn-disabled" : "btn-secondary"} ${isApprovalLoading ? "loading" : ""}`}
-            onClick={handleApproveTokens}
-            disabled={isApproved || !tokensToBuy || isInputDisabled}
-          >
-            Approve {upTokenSymbol}
-          </button>
-
+          {showApproveButton && (
+            <button
+              className={`btn btn-secondary ${swapToken.isApproving ? "loading" : ""}`}
+              onClick={handleApproveTokens}
+              disabled={isInputDisabled || swapToken.isApproving}
+            >
+              {swapToken.isApproving ? "Approving..." : `Approve ${upTokenSymbol}`}
+            </button>
+          )}
           <button
             className={`btn btn-primary ${isTransactionLoading ? "loading" : ""}`}
             onClick={handleBuyTokens}
-            disabled={!isApproved || !tokensToBuy || isInputDisabled}
+            disabled={!hasAllowanceForAmount || !tokensToBuy || parseFloat(tokensToBuy) <= 0 || isInputDisabled}
           >
-            Buy Tokens
+            {isTransactionLoading ? "Processing..." : "Buy Tokens"}
           </button>
         </div>
       </div>
