@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { NextPage } from "next";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
+import { ClockIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
 import { useFromBlockForPeriod } from "~~/hooks/useFromBlockForPeriod";
@@ -17,6 +18,16 @@ const stageLabels: Record<UserStage, string> = {
   [UserStage.OG]: "OG Trader",
 };
 
+// Time period options for filtering events
+type TimePeriodKey = "1h" | "1d" | "7d" | "30d";
+
+const TIME_PERIODS: Record<TimePeriodKey, { label: string; value: number }> = {
+  "1h": { label: "1 Hour", value: 1 / 24 }, // 1/24 of a day
+  "1d": { label: "1 Day", value: 1 },
+  "7d": { label: "7 Days", value: 7 },
+  "30d": { label: "30 Days", value: 30 },
+};
+
 interface ProcessedEvent {
   id: string;
   type: string;
@@ -27,12 +38,12 @@ interface ProcessedEvent {
 }
 
 const EVENTS_PER_PAGE = 20;
-
-const HISTORY_DAYS = 60;
+const DEFAULT_TIME_PERIOD: TimePeriodKey = "1h";
 
 const Events: NextPage = () => {
   const { chain } = useAccount();
-  const { fromBlock, isLoading: isLoadingBlock } = useFromBlockForPeriod(HISTORY_DAYS);
+  const [timePeriod, setTimePeriod] = useState<TimePeriodKey>(DEFAULT_TIME_PERIOD);
+  const { fromBlock, isLoading: isLoadingBlock } = useFromBlockForPeriod(TIME_PERIODS[timePeriod].value);
   const [allEvents, setAllEvents] = useState<ProcessedEvent[]>([]);
   const [displayedEvents, setDisplayedEvents] = useState<ProcessedEvent[]>([]);
   const [page, setPage] = useState(1);
@@ -40,7 +51,25 @@ const Events: NextPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("All");
 
+  // Infinite scroll implementation without external library
   const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Reset when time period changes
+  useEffect(() => {
+    setIsLoading(true);
+    setAllEvents([]);
+    setDisplayedEvents([]);
+    setPage(1);
+  }, [timePeriod]);
+
+  // Debug output for the fromBlock
+  useEffect(() => {
+    if (fromBlock !== 0n) {
+      console.log(`[Events] Using fromBlock ${fromBlock} (approximately ${TIME_PERIODS[timePeriod].label} of history)`);
+    }
+  }, [fromBlock, timePeriod]);
+
+  // Common event configuration
   const commonEventConfig = {
     contractName: "DGTokenVendor" as const,
     fromBlock,
@@ -232,27 +261,48 @@ const Events: NextPage = () => {
     <div className="flex items-center flex-col flex-grow pt-10">
       <div className="text-center mb-8 max-w-2xl">
         <h1 className="text-4xl font-bold text-primary mb-4">DGTokenVendor Events</h1>
-        <p className="text-base-content/70 text-lg">
+        <p className="text-base-content/70 text-lg px-2">
           View the history of buy, sell, light up, and upgrade events on the vendor contract.
         </p>
+      </div>
+
+      {/* Time Period Selector */}
+      <div className="w-full max-w-6xl mb-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-base-200 p-4 rounded-xl">
+          <div className="flex items-center">
+            <ClockIcon className="h-5 w-5 text-primary mr-2" />
+            <span className="font-medium">Time Period:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(TIME_PERIODS).map(([key, { label }]) => (
+              <button
+                key={key}
+                onClick={() => setTimePeriod(key as TimePeriodKey)}
+                className={`btn btn-sm ${timePeriod === key ? "btn-primary" : "btn-outline"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Tab Navigation */}
       <div className="tabs tabs-boxed mb-6 w-full max-w-6xl flex justify-center">
         <a className={`tab ${activeTab === "All" ? "tab-active" : ""}`} onClick={() => changeTab("All")}>
-          All Events
+          All
         </a>
         <a className={`tab ${activeTab === "Buy" ? "tab-active" : ""}`} onClick={() => changeTab("Buy")}>
-          Buy Events
+          Buy
         </a>
         <a className={`tab ${activeTab === "Sell" ? "tab-active" : ""}`} onClick={() => changeTab("Sell")}>
-          Sell Events
+          Sell
         </a>
         <a className={`tab ${activeTab === "Light Up" ? "tab-active" : ""}`} onClick={() => changeTab("Light Up")}>
-          Light Up Events
+          Lit
         </a>
         <a className={`tab ${activeTab === "Upgrade" ? "tab-active" : ""}`} onClick={() => changeTab("Upgrade")}>
-          Upgrade Events
+          Upgrade
         </a>
       </div>
 
@@ -264,11 +314,14 @@ const Events: NextPage = () => {
           </div>
         ) : displayedEvents.length === 0 ? (
           <div className="text-center p-8 bg-base-200 rounded-lg">
-            <p className="text-xl">No events found</p>
+            <p className="text-xl">No events found for the selected time period</p>
+            <p className="text-sm text-base-content/70 mt-2">
+              Try increasing the time range or switching to a different tab
+            </p>
           </div>
         ) : (
           <div>
-            <div className="overflow-x-auto shadow-lg rounded-lg">
+            <div className="overflow-x-auto shadow-lg rounded-lg mx-2">
               <table className="table table-zebra w-full">
                 <thead>
                   <tr>
@@ -324,7 +377,7 @@ const Events: NextPage = () => {
                               <span className="font-medium">User:</span> <Address address={event.args.user} />
                             </div>
                             <div>
-                              <span className="font-medium">Burned:</span> {formatEther(event.args.burnAmount || 0n)} UP
+                              <span className="font-medium">Burned:</span> {formatEther(event.args.burnAmount || 0n)} DG
                             </div>
                             <div>
                               <span className="font-medium">New Fuel:</span> {Number(event.args.newFuel).toString()}
@@ -378,7 +431,6 @@ const Events: NextPage = () => {
               </table>
             </div>
 
-            {/* Infinite scroll loading indicator */}
             {hasMore && (
               <div ref={loaderRef} className="flex justify-center items-center py-4 mt-4">
                 <span className="loading loading-spinner loading-md"></span>

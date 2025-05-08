@@ -45,7 +45,7 @@ export const useFromBlockForPeriod = (days = 30) => {
     if (!currentBlockNumber) return 0n;
 
     const blocksPerDay = getBlocksPerDay();
-    const periodInBlocks = blocksPerDay * BigInt(days);
+    const periodInBlocks = (blocksPerDay * BigInt(Math.round(days * 24))) / 24n;
 
     // Don't go negative, use a safe minimum
     return currentBlockNumber > periodInBlocks ? currentBlockNumber - periodInBlocks : 0n;
