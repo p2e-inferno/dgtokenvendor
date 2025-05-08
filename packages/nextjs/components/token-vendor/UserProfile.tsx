@@ -57,7 +57,7 @@ export const UserProfile = () => {
   });
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto lg:p-6">
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title flex items-center gap-2 text-2xl mb-4">
@@ -69,7 +69,7 @@ export const UserProfile = () => {
             <div className="bg-base-200 p-6 rounded-xl">
               <h3 className="text-xl font-bold mb-4">Account Information</h3>
 
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex flex-col lg:flex-row gap-2 mb-4">
                 <div className="text-base-content/70">Address:</div>
                 <Address address={address} />
               </div>
@@ -104,7 +104,7 @@ export const UserProfile = () => {
                     </div>
                   </div>
                   <div className="stat-title">{dgTokenSymbol} Balance</div>
-                  <div className="stat-value">{parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(4)}</div>
+                  <div className="stat-value">{parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(2)}</div>
                   <div className="stat-desc">Digital Game Token</div>
                 </div>
 
@@ -117,7 +117,7 @@ export const UserProfile = () => {
                     </div>
                   </div>
                   <div className="stat-title">{upTokenSymbol} Balance</div>
-                  <div className="stat-value">{parseFloat(formatEther(yourUPTokenBalance || 0n)).toFixed(4)}</div>
+                  <div className="stat-value">{parseFloat(formatEther(yourUPTokenBalance || 0n)).toFixed(2)}</div>
                   <div className="stat-desc">Unlock Protocol Token</div>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export const UserProfile = () => {
             <div className="bg-base-200 p-6 rounded-xl">
               <h3 className="text-xl font-bold mb-4">Game Statistics</h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-base-100 p-4 rounded-lg flex flex-col h-full justify-between">
                   <div className="stat-title">Fuel Level</div>
                   <div className="flex-grow flex flex-col items-start justify-center py-2">
