@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon, FireIcon } from "@heroicons/react/24/outline";
@@ -105,10 +106,8 @@ export const Header = () => {
           )}
         </div>
         <Link href="/" passHref className="hidden lg:flex items-center gap-3 ml-4 mr-6 shrink-0">
-          <div className="flex relative text-4xl">
-            <span role="img" aria-label="fire" className="animate-pulse-fast">
-              🔥
-            </span>
+          <div className="flex relative w-10 h-10">
+            <Image src="/dgTokenVendor_logo.png" alt="DGToken Vendor Logo" layout="fill" objectFit="contain" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight text-primary">DGToken Vendor</span>

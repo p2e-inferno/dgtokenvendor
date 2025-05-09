@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { RecentActivity } from "./RecentActivity";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
@@ -98,8 +99,13 @@ export const UserProfile = () => {
                 <div className="stat">
                   <div className="stat-figure text-secondary">
                     <div className="avatar">
-                      <div className="w-16 rounded-full bg-secondary text-white flex items-center justify-center text-2xl">
-                        {dgTokenSymbol?.[0] || "D"}
+                      <div className="w-16 h-16 rounded-full text-white flex items-center justify-center relative overflow-hidden">
+                        <Image
+                          src="/dgToken_logo.png"
+                          alt={`${dgTokenSymbol || "DGToken"} logo`}
+                          layout="fill"
+                          objectFit="cover"
+                        />
                       </div>
                     </div>
                   </div>
@@ -111,8 +117,13 @@ export const UserProfile = () => {
                 <div className="stat">
                   <div className="stat-figure text-primary">
                     <div className="avatar">
-                      <div className="w-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl">
-                        {upTokenSymbol?.[0] || "U"}
+                      <div className="w-16 h-16 rounded-full text-white flex items-center justify-center relative overflow-hidden">
+                        <Image
+                          src="/upToken_logo.png"
+                          alt={`${upTokenSymbol || "UPToken"} logo`}
+                          layout="fill"
+                          objectFit="cover"
+                        />
                       </div>
                     </div>
                   </div>
@@ -168,7 +179,7 @@ export const UserProfile = () => {
                   </div>
                   <div className="stat-desc mt-2 whitespace-normal">
                     {userState?.stage !== undefined && stageLabels[userState.stage as UserStage]
-                      ? `Current Trader Level: ${stageLabels[userState.stage as UserStage]}`
+                      ? `Current Player Level: ${stageLabels[userState.stage as UserStage]}`
                       : "Loading..."}
                   </div>
                 </div>

@@ -15,8 +15,7 @@ const Home: NextPage = () => {
         <div className="text-center mb-12 max-w-2xl">
           <h1 className="text-5xl font-bold text-primary mb-4">DG Token Vendor</h1>
           <p className="text-lg text-base-content/70">
-            Buy, sell, and manage digital game tokens using our secure token vendor platform. Connect your wallet to get
-            started!
+            Buy, sell, and light up your path to an OG in the DreadGang. Connect your wallet to get started!
           </p>
         </div>
 
@@ -32,7 +31,7 @@ const Home: NextPage = () => {
                 <CurrencyDollarIcon className="h-8 w-8 text-primary" />
               </div>
               <p className="text-base-content/70">
-                Buy and sell digital tokens at competitive rates. Exchange your Unlock Protocol tokens for DG tokens.
+                Get straight into the action. Exchange UP tokens for DG tokens and vice versa.
               </p>
               <div className="card-actions justify-end mt-4">
                 <button className="btn btn-primary btn-sm">Visit Vendor</button>
@@ -51,7 +50,7 @@ const Home: NextPage = () => {
                 <UserCircleIcon className="h-8 w-8 text-accent" />
               </div>
               <p className="text-base-content/70">
-                View your game profile, token balances, and transaction history. Check your verification status.
+                View your game profile, token balances, and transaction history. Check your vendor access status.
               </p>
               <div className="card-actions justify-end mt-4">
                 <button className="btn btn-accent btn-sm">View Profile</button>
@@ -73,8 +72,8 @@ const Home: NextPage = () => {
                 </div>
               </div>
               <p className="text-base-content/70">
-                Light up your fuel gauge and upgrade your trader status. Ascend from PLEB to HUSTLER to OG with
-                strategic actions.
+                Light up your fuel gauge and upgrade your status. Ascend from PLEB to HUSTLER to OG with strategic
+                actions.
               </p>
               <div className="card-actions justify-end mt-4">
                 <button className="btn btn-secondary btn-sm">Power Up</button>
