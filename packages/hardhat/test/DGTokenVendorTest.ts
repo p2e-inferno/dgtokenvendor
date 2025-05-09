@@ -1,20 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { DGToken, YourToken, DGTokenVendor, MockNFT } from "../typechain-types";
-
-// Test token contract with much larger supply
-const TEST_TOKEN_CONTRACT = `
-pragma solidity 0.8.20;
-
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-contract TestToken is ERC20 {
-    constructor() ERC20("Test Token", "TEST") {
-        _mint(msg.sender, 10000000 * 10 ** 18); // 10 million tokens
-    }
-}
-`;
+import { DGTokenVendor, MockNFT } from "../typechain-types";
 
 describe("🚩 DGTokenVendor Contract Tests", function () {
   // Contract instances
@@ -28,6 +15,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
   let yourTokenAddress: string;
   let vendorAddress: string;
   let devAddress: string;
+  let stewardAddress: string;
 
   // Constants
   const INITIAL_EXCHANGE_RATE = 5;
@@ -36,11 +24,13 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
   // Setup before tests
   before(async function () {
-    const [owner, user1, user2] = await ethers.getSigners();
+    const [owner, user1, user2, user3] = await ethers.getSigners();
     devAddress = user2.address; // Using user2 as dev address
+    stewardAddress = user3.address; // Using user2 as dev address
     console.log("🔑 Owner address:", owner.address);
     console.log("🔑 User1 address:", user1.address);
     console.log("🔑 Dev address:", devAddress);
+    console.log("🔑 Council address:", stewardAddress);
   });
 
   // Deploy contracts before each test
@@ -80,6 +70,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       yourTokenAddress,
       INITIAL_EXCHANGE_RATE,
       devAddress,
+      stewardAddress
     )) as DGTokenVendor;
     vendorAddress = await vendor.getAddress();
     console.log("📝 DGTokenVendor deployed at:", vendorAddress);
@@ -104,7 +95,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     }
 
     // Add MockNFT to whitelist
-    await vendor.addWhitelistedCollection(mockNFTAddress);
+    await vendor.initializeWhitelistedCollections([mockNFTAddress]);
   });
 
   // Helper function to give a user a valid key using the MockNFT contract
@@ -142,86 +133,76 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
   });
 
-  describe("🧪 Whitelist Management", function () {
-    it("Should allow owner to add a collection", async function () {
-      const [owner, user1] = await ethers.getSigners();
-      const MockNFTFactory = await ethers.getContractFactory("MockNFT");
-      const anotherNFT = await MockNFTFactory.deploy("AnotherNFT", "ANFT", "https://example.com/anft/");
-      const anotherNFTAddress = await anotherNFT.getAddress();
+  // describe("🧪 Whitelist Management", function () {
+  //   it("Should allow owner to add a collection", async function () {
+  //     const [owner, user1] = await ethers.getSigners();
+  //     const MockNFTFactory = await ethers.getContractFactory("MockNFT");
+  //     const anotherNFT = await MockNFTFactory.deploy("AnotherNFT", "ANFT", "https://example.com/anft/");
+  //     const anotherNFTAddress = await anotherNFT.getAddress();
 
-      await vendor.addWhitelistedCollection(anotherNFTAddress);
+  //     await vendor.addWhitelistedCollection(anotherNFTAddress);
 
-      const collections = await vendor.getWhitelistedCollections();
-      expect(collections).to.include(anotherNFTAddress);
-    });
+  //     const collections = await vendor.getWhitelistedCollections();
+  //     expect(collections).to.include(anotherNFTAddress);
+  //   });
 
-    it("Should not allow non-owner to add a collection", async function () {
-      const [owner, user1] = await ethers.getSigners();
-      const MockNFTFactory = await ethers.getContractFactory("MockNFT");
-      const anotherNFT = await MockNFTFactory.deploy("AnotherNFT", "ANFT", "https://example.com/anft/");
-      const anotherNFTAddress = await anotherNFT.getAddress();
+  //   // it("Should not allow non-owner to add a collection", async function () {
+  //   //   const [owner, user1] = await ethers.getSigners();
+  //   //   const MockNFTFactory = await ethers.getContractFactory("MockNFT");
+  //   //   const anotherNFT = await MockNFTFactory.deploy("AnotherNFT", "ANFT", "https://example.com/anft/");
+  //   //   const anotherNFTAddress = await anotherNFT.getAddress();
 
-      await expect(vendor.connect(user1).addWhitelistedCollection(anotherNFTAddress)).to.be.revertedWithCustomError(
-        vendor,
-        "OwnableUnauthorizedAccount",
-      );
-    });
+  //   //   await expect(vendor.connect(user1).addWhitelistedCollection(anotherNFTAddress)).to.be.revertedWithCustomError(
+  //   //     vendor,
+  //   //     "OwnableUnauthorizedAccount",
+  //   //   );
+  //   // });
 
-    it("Should not allow adding a collection that's already whitelisted", async function () {
-      const mockNFTAddress = await mockNFT.getAddress();
-      await expect(vendor.addWhitelistedCollection(mockNFTAddress)).to.be.revertedWithCustomError(
-        vendor,
-        "CollectionAlreadyAdded",
-      );
-    });
+  //   // it("Should not allow adding a collection that's already whitelisted", async function () {
+  //   //   const mockNFTAddress = await mockNFT.getAddress();
+  //   //   await expect(vendor.addWhitelistedCollection(mockNFTAddress)).to.be.revertedWithCustomError(
+  //   //     vendor,
+  //   //     "CollectionAlreadyAdded",
+  //   //   );
+  //   // });
 
-    it("Should allow batch adding collections", async function () {
-      const MockNFTFactory = await ethers.getContractFactory("MockNFT");
-      const nft1 = await MockNFTFactory.deploy("NFT1", "NFT1", "https://example.com/nft1/");
-      const nft2 = await MockNFTFactory.deploy("NFT2", "NFT2", "https://example.com/nft2/");
+  //   // it("Should allow batch adding collections", async function () {
+  //   //   const MockNFTFactory = await ethers.getContractFactory("MockNFT");
+  //   //   const nft1 = await MockNFTFactory.deploy("NFT1", "NFT1", "https://example.com/nft1/");
+  //   //   const nft2 = await MockNFTFactory.deploy("NFT2", "NFT2", "https://example.com/nft2/");
 
-      await vendor.batchAddWhitelistedCollections([await nft1.getAddress(), await nft2.getAddress()]);
+  //   //   await vendor.batchAddWhitelistedCollections([await nft1.getAddress(), await nft2.getAddress()]);
 
-      const collections = await vendor.getWhitelistedCollections();
-      expect(collections).to.include(await nft1.getAddress());
-      expect(collections).to.include(await nft2.getAddress());
-    });
+  //   //   const collections = await vendor.getWhitelistedCollections();
+  //   //   expect(collections).to.include(await nft1.getAddress());
+  //   //   expect(collections).to.include(await nft2.getAddress());
+  //   // });
 
-    it("Should not allow exceeding max whitelist size", async function () {
-      const MockNFTFactory = await ethers.getContractFactory("MockNFT");
-      const nfts = [];
+  //   it("Should not allow exceeding max whitelist size", async function () {
+  //     const MockNFTFactory = await ethers.getContractFactory("MockNFT");
+  //     const nfts = [];
 
-      // Create 11 NFTs (max is 10, and we already have 1)
-      for (let i = 0; i < 11; i++) {
-        const nft = await MockNFTFactory.deploy(`NFT${i}`, `NFT${i}`, `https://example.com/nft${i}/`);
-        nfts.push(await nft.getAddress());
-      }
+  //     // Create 11 NFTs (max is 10, and we already have 1)
+  //     for (let i = 0; i < 11; i++) {
+  //       const nft = await MockNFTFactory.deploy(`NFT${i}`, `NFT${i}`, `https://example.com/nft${i}/`);
+  //       nfts.push(await nft.getAddress());
+  //     }
 
-      await expect(vendor.batchAddWhitelistedCollections(nfts)).to.be.revertedWithCustomError(
-        vendor,
-        "ExceedsMaxWhitelistedCollections",
-      );
-    });
+  //     // await expect(vendor.batchAddWhitelistedCollections(nfts)).to.be.revertedWithCustomError(
+  //     //   vendor,
+  //     //   "ExceedsMaxWhitelistedCollections",
+  //     // );
+  //   });
 
-    it("Should allow owner to remove a collection", async function () {
-      const mockNFTAddress = await mockNFT.getAddress();
-      await vendor.removeWhitelistedCollection(mockNFTAddress);
+  //   // it("Should allow owner to remove a collection", async function () {
+  //   //   const mockNFTAddress = await mockNFT.getAddress();
+  //   //   await vendor.removeWhitelistedCollection(mockNFTAddress);
 
-      const collections = await vendor.getWhitelistedCollections();
-      expect(collections).to.not.include(mockNFTAddress);
-    });
+  //   //   const collections = await vendor.getWhitelistedCollections();
+  //   //   expect(collections).to.not.include(mockNFTAddress);
+  //   // });
 
-    it("Should not allow removing a non-whitelisted collection", async function () {
-      const MockNFTFactory = await ethers.getContractFactory("MockNFT");
-      const nonListedNFT = await MockNFTFactory.deploy("NonListed", "NLNFT", "https://example.com/nl/");
-      const nonListedNFTAddress = await nonListedNFT.getAddress();
-
-      await expect(vendor.removeWhitelistedCollection(nonListedNFTAddress)).to.be.revertedWithCustomError(
-        vendor,
-        "CollectionAddressNotFound",
-      );
-    });
-  });
+  // });
 
   describe("🧪 Token Exchange Functionality", function () {
     it("Should not allow buying tokens without NFT", async function () {
@@ -297,8 +278,6 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       // This is only for testing
       const ownerBalance = await yourToken.balanceOf(owner.address);
       if (ownerBalance < stageConstants.minSellAmount) {
-        // This won't work in a real scenario but is needed for tests
-        // We'll handle this by skipping the test if it's not possible
         console.log("⚠️ Test skipped: Owner has insufficient YourToken balance to transfer to user1");
         return;
       }
@@ -641,19 +620,6 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       expect(await vendor.getFirstValidCollection(user1.address)).to.equal(mockNFTAddress);
     });
 
-    it("Should handle empty whitelist correctly", async function () {
-      const [owner, user1] = await ethers.getSigners();
-      const mockNFTAddress = await mockNFT.getAddress();
-
-      // Remove all collections
-      await vendor.removeWhitelistedCollection(mockNFTAddress);
-
-      // Mint an NFT to user1
-      await giveUserValidKey(user1.address);
-
-      // User should not have valid key (empty whitelist)
-      expect(await vendor.hasValidKey(user1.address)).to.be.false;
-    });
   });
 
   describe("🧪 Integration Tests", function () {
@@ -830,12 +796,13 @@ describe("🧪 Staging Functionality", function () {
   let yourTokenAddress: string;
   let vendorAddress: string;
   let devAddress: string;
+  let stewardAddress: string;
 
   beforeEach(async function () {
     // Copy the setup from the main describe block
     const [owner] = await ethers.getSigners();
     devAddress = (await ethers.getSigners())[2].address;
-
+    stewardAddress = (await ethers.getSigners())[3].address;
     const DGTokenFactory = await ethers.getContractFactory("DGToken");
     dgToken = await DGTokenFactory.deploy(owner.address, devAddress, 1000000n * BigInt(1e18));
     dgTokenAddress = await dgToken.getAddress();
@@ -856,6 +823,7 @@ describe("🧪 Staging Functionality", function () {
       yourTokenAddress,
       5, // INITIAL_EXCHANGE_RATE
       devAddress,
+      stewardAddress
     )) as DGTokenVendor;
     vendorAddress = await vendor.getAddress();
 
@@ -866,7 +834,7 @@ describe("🧪 Staging Functionality", function () {
     const ownerBalance = await yourToken.balanceOf(owner.address);
     await yourToken.transfer(vendorAddress, ownerBalance);
 
-    await vendor.addWhitelistedCollection(mockNFTAddress);
+    await vendor.initializeWhitelistedCollections([mockNFTAddress]);
   });
 
   // Helper function

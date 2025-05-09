@@ -348,7 +348,7 @@ const Events: NextPage = () => {
                             </div>
                             <div>
                               <span className="font-medium">Paid:</span> {formatEther(event.args.baseTokenAmount || 0n)}{" "}
-                              DAPPX
+                              UnlockProtocolToken
                             </div>
                           </>
                         );
@@ -365,7 +365,7 @@ const Events: NextPage = () => {
                             </div>
                             <div>
                               <span className="font-medium">Received:</span>{" "}
-                              {formatEther(event.args.baseTokenAmount || 0n)} DAPPX
+                              {formatEther(event.args.baseTokenAmount || 0n)} UnlockProtocolToken
                             </div>
                           </>
                         );

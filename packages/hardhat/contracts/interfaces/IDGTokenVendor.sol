@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title IDGTokenVendor
  * @author Danny Thomx
- * @notice Interface for the DGTokenVendor contract
+ * @notice Interface for the DGTokenVendor V2 contract
  * @dev Contains all external and public functions of the DGTokenVendor contract
  */
 interface IDGTokenVendor {
@@ -45,7 +45,7 @@ interface IDGTokenVendor {
 
     /**
      * @notice Constants for stage system timing and minimum amounts
-     * @param cooldown Cooldown period between stage operations
+     * @param maxSellCooldown Cooldown period before another maxSell txn can be made
      * @param dailyWindow Time window for daily limits
      * @param minBuyAmount Minimum amount for buying tokens
      * @param minSellAmount Minimum amount for selling tokens
@@ -78,6 +78,7 @@ interface IDGTokenVendor {
     /**
      * @notice Fee configuration
      * @param maxFeeBps Maximum fee in basis points
+     * @param minFeeBps Minimum fee in basis points
      * @param buyFeeBps Fee for buying tokens in basis points
      * @param sellFeeBps Fee for selling tokens in basis points
      * @param rateChangeCooldown Cooldown for changing exchange rate
@@ -85,6 +86,7 @@ interface IDGTokenVendor {
      */
     struct FeeConfig {
         uint256 maxFeeBps;
+        uint256 minFeeBps;
         uint256 buyFeeBps;
         uint256 sellFeeBps;
         uint256 rateChangeCooldown;
@@ -110,6 +112,7 @@ interface IDGTokenVendor {
      * @param lastRateChangeTimestamp Last time exchange rate was changed
      * @param lastFeeChangeTimestamp Last time fees were changed
      * @param devAddress Developer address for fee withdrawal
+     * @param stewardCouncil Multisig address for emergency action
      * @param lastDevAddressChangeTimestamp Last time dev address was changed
      */
     struct SystemState {
@@ -118,6 +121,7 @@ interface IDGTokenVendor {
         uint256 lastRateChangeTimestamp;
         uint256 lastFeeChangeTimestamp;
         address devAddress;
+        address stewardCouncil;
         uint256 lastDevAddressChangeTimestamp;
     }
 
@@ -164,6 +168,12 @@ interface IDGTokenVendor {
      * @param newDevAddress The new developer address
      */
     event DevAddressUpdated(address indexed newDevAddress);
+
+    /**
+     * @notice Emitted when the steward council address is updated
+     * @param newStewardCouncilAddress The new steward council address
+     */
+    event StewardCouncilAddressUpdated(address indexed newStewardCouncilAddress);
 
     /**
      * @notice Emitted when fees are withdrawn
@@ -297,28 +307,10 @@ interface IDGTokenVendor {
     function withdrawETH() external;
 
     /**
-     * @notice Add a new whitelisted collection
-     * @param collectionAddress Address of collection to whitelist
-     */
-    function addWhitelistedCollection(address collectionAddress) external;
-
-    /**
-     * @notice Remove a whitelisted collection
-     * @param collectionAddress Address of collection to remove
-     */
-    function removeWhitelistedCollection(address collectionAddress) external;
-
-    /**
      * @notice Initialize the whitelisted collections 
      * @param collections Array of collection addresses to whitelist
      */
     function initializeWhitelistedCollections(address[] calldata collections) external;
-
-    /**
-     * @notice Batch add whitelisted collections
-     * @param _collectionAddresses Array of collection addresses to add
-     */
-    function batchAddWhitelistedCollections(address[] memory _collectionAddresses) external;
 
     /**
      * @notice Update stage configuration

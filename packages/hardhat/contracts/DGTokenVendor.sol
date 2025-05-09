@@ -1,6 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
+/**
+ * @title DGTokenVendor
+ * @author Danny Thomx
+ * @notice A token vendor implementation for trading, burning and account progression
+ * @dev This contract implements a token exchange system with additional features such as
+ * user stages, points system, fuel system, and NFT-based access control
 
+ * @custom:disclaimer This smart contract is provided for EDUCATIONAL and INFORMATIONAL purposes ONLY.
+ * The author makes no warranties or representations, express or implied, regarding the security,
+ * accuracy, or fitness for any particular purpose of this code. While efforts have been made to
+ * ensure the contract's quality, NO GUARANTEE is provided about its security or functionality.
+ *
+ * Users must conduct their own thorough review, testing, and security audits before any implementation
+ * in a production environment. For commercial applications, professional code audits by reputable
+ * security firms are strongly recommended. The author shall not be held liable for any damages or
+ * consequences resulting from the use of this contract.
+ */
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -79,90 +95,32 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         _;
     }
 
+    modifier onlyDev() {
+        if (msg.sender != systemState.devAddress) revert UnauthorizedCaller();
+        _;
+    }
+
+    modifier onlyAdmin() {
+        if (!(msg.sender == owner() || msg.sender == systemState.stewardCouncil)) revert UnauthorizedCaller();
+        _;
+    }
+
     constructor(
         address _baseToken,
         address _swapToken,
         uint256 _initialExchangeRate,
-        address _devAddress
+        address _devAddress,
+        address _stewardCouncilAddress
     ) Ownable(msg.sender) {
         if (_initialExchangeRate == 0) revert InvalidExchangeRate();
-        // TODO: Uncomment this once the contract is ready to be deployed to mainnet
-        // _initialize(_baseToken, _swapToken, _initialExchangeRate, _devAddress);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////// TODO: Remove this once the contract is ready to be deployed to mainnet ////////////
-        //////////// Testnet values use `_initialize()` for mainnet deployment ////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        tokenConfig = TokenConfig({
-            baseToken: IERC20(_baseToken),
-            swapToken: IERC20(_swapToken),
-            exchangeRate: _initialExchangeRate
-        });
-
-        systemState = SystemState({
-            baseTokenFees: 0,
-            swapTokenFees: 0,
-            lastRateChangeTimestamp: block.timestamp,
-            lastFeeChangeTimestamp: block.timestamp,
-            devAddress: _devAddress,
-            lastDevAddressChangeTimestamp: block.timestamp
-        });
-
-        feeConfig = FeeConfig({
-            maxFeeBps: 1000,
-            buyFeeBps: 100,
-            sellFeeBps: 200,
-            rateChangeCooldown: 0 days,
-            appChangeCooldown: 0 days
-        });
-
-        stageConstants = StageConstants({
-            maxSellCooldown: 45 days,
-            dailyWindow: 24 hours,
-            minBuyAmount: 1000e18,
-            minSellAmount: 5000e18
-        });
-
-        stageConfig[UserStage.PLEB] = StageConfig({
-            burnAmount: 10e18,
-            upgradePointsThreshold: 0,
-            upgradeFuelThreshold: 5,
-            fuelRate: 5,
-            pointsAwarded: 5,
-            qualifyingBuyThreshold: 1000e18,
-            maxSellBps: 5000,
-            dailyLimitMultiplier: 100
-        });
-
-        stageConfig[UserStage.HUSTLER] = StageConfig({
-            burnAmount: 50e18,
-            upgradePointsThreshold: 20,
-            upgradeFuelThreshold: 15,
-            fuelRate: 5,
-            pointsAwarded: 5,
-            qualifyingBuyThreshold: 5000e18,
-            maxSellBps: 6000,
-            dailyLimitMultiplier: 100
-        });
-
-        stageConfig[UserStage.OG] = StageConfig({
-            burnAmount: 100e18,
-            upgradePointsThreshold: 20,
-            upgradeFuelThreshold: 20,
-            fuelRate: 5,
-            pointsAwarded: 5,
-            qualifyingBuyThreshold: 20000e18,
-            maxSellBps: 7000,
-            dailyLimitMultiplier: 100
-        });
+        _initialize(_baseToken, _swapToken, _initialExchangeRate, _devAddress, _stewardCouncilAddress);
     }
 
-    function pause() public onlyOwner {
+    function pause() public onlyAdmin {
         _pause();
     }
 
-    function unpause() public onlyOwner {
+    function unpause() public onlyAdmin {
         _unpause();
     }
 
@@ -280,6 +238,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         if (block.timestamp < systemState.lastFeeChangeTimestamp + feeConfig.appChangeCooldown)
             revert FeeCooldownActive();
         if (newBuyFeeBPS > feeConfig.maxFeeBps || newSellFeeBPS > feeConfig.maxFeeBps) revert InvalidFeeBPS();
+        if (newBuyFeeBPS < feeConfig.minFeeBps || newSellFeeBPS < feeConfig.minFeeBps) revert InvalidFeeBPS();
 
         feeConfig.buyFeeBps = newBuyFeeBPS;
         feeConfig.sellFeeBps = newSellFeeBPS;
@@ -287,13 +246,19 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         emit FeeRatesUpdated(newBuyFeeBPS, newSellFeeBPS);
     }
 
-    function setDevAddress(address newDevAddress) external onlyOwner {
+    function setDevAddress(address newDevAddress) external onlyDev {
         if (newDevAddress == address(0)) revert InvalidDevAddress();
         if (block.timestamp < systemState.lastDevAddressChangeTimestamp + feeConfig.appChangeCooldown)
             revert AppChangeCooldownStillActive();
         systemState.devAddress = newDevAddress;
         systemState.lastDevAddressChangeTimestamp = block.timestamp;
         emit DevAddressUpdated(newDevAddress);
+    }
+
+    function setStewardCouncilAddress(address _newCouncilAddress) external onlyOwner {
+        if (_newCouncilAddress == address(0)) revert InvalidDevAddress();
+        systemState.stewardCouncil = _newCouncilAddress;
+        emit StewardCouncilAddressUpdated(_newCouncilAddress);
     }
 
     function withdrawFees() external nonReentrant onlyAuthorized whenNotPaused {
@@ -325,58 +290,6 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         if (!success) revert ETHTransferFailed();
 
         emit ETHWithdrawn(to, amount);
-    }
-
-    function addWhitelistedCollection(address collectionAddress) external onlyOwner {
-        if (whitelistedCollections.length >= MAX_WHITELISTED_COLLECTIONS) revert ExceedsMaxWhitelistedCollections();
-        if (_isCollectionWhitelisted(collectionAddress)) revert CollectionAlreadyAdded();
-
-        whitelistedCollections.push(collectionAddress);
-        emit WhitelistedCollectionAdded(collectionAddress);
-    }
-
-    function batchAddWhitelistedCollections(address[] calldata collections) external onlyOwner {
-        if (whitelistedCollections.length + collections.length > MAX_WHITELISTED_COLLECTIONS)
-            revert ExceedsMaxWhitelistedCollections();
-
-        for (uint256 i = 0; i < collections.length; i++) {
-            if (!_isCollectionWhitelisted(collections[i])) {
-                whitelistedCollections.push(collections[i]);
-                emit WhitelistedCollectionAdded(collections[i]);
-            }
-        }
-    }
-
-    function removeWhitelistedCollection(address collectionAddress) external onlyOwner {
-        uint256 index = _findCollectionIndex(collectionAddress);
-        if (index >= whitelistedCollections.length) revert CollectionAddressNotFound();
-
-        whitelistedCollections[index] = whitelistedCollections[whitelistedCollections.length - 1];
-        whitelistedCollections.pop();
-        emit WhitelistedCollectionRemoved(collectionAddress);
-    }
-
-    function batchRemoveWhitelistedCollections(address[] calldata collections) external onlyOwner {
-        uint256 length = collections.length;
-        for (uint256 i = length; i > 0; ) {
-            unchecked {
-                i--;
-            }
-
-            address collection = collections[i];
-            uint256 index = _findCollectionIndex(collection);
-            if (index >= whitelistedCollections.length) {
-                revert CollectionAddressNotFound();
-            }
-
-            uint256 lastIndex = whitelistedCollections.length - 1;
-            if (index != lastIndex) {
-                whitelistedCollections[index] = whitelistedCollections[lastIndex];
-            }
-            whitelistedCollections.pop();
-
-            emit WhitelistedCollectionRemoved(collection);
-        }
     }
 
     function initializeWhitelistedCollections(address[] calldata collections) external onlyAuthorized {
@@ -519,7 +432,8 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         address _baseToken,
         address _swapToken,
         uint256 _initialExchangeRate,
-        address _devAddress
+        address _devAddress,
+        address _stewardCouncilAddress
     ) private {
         // Initialize token config
         tokenConfig = TokenConfig({
@@ -535,16 +449,18 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
             lastRateChangeTimestamp: block.timestamp,
             lastFeeChangeTimestamp: block.timestamp,
             devAddress: _devAddress,
+            stewardCouncil: _stewardCouncilAddress,
             lastDevAddressChangeTimestamp: block.timestamp
         });
 
         // Initialize fee config
         feeConfig = FeeConfig({
             maxFeeBps: 1000,
+            minFeeBps: 10,
             buyFeeBps: 100,
             sellFeeBps: 200,
             rateChangeCooldown: 90 days,
-            appChangeCooldown: 90 days
+            appChangeCooldown: 120 days
         });
 
         // Initialize stage constants
@@ -581,7 +497,7 @@ contract DGTokenVendor is Ownable, ReentrancyGuard, Pausable, IDGTokenVendor {
         stageConfig[UserStage.OG] = StageConfig({
             burnAmount: 500e18,
             upgradePointsThreshold: 500,
-            upgradeFuelThreshold: 50,
+            upgradeFuelThreshold: 100,
             fuelRate: 5,
             pointsAwarded: 5,
             qualifyingBuyThreshold: 20000e18,

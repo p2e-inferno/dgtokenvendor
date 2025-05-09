@@ -1,31 +1,40 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
+import { useAccount } from "wagmi";
 import { FireIcon } from "@heroicons/react/24/solid";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useTokenAllowance } from "~~/hooks/useTokenAllowance";
 import { notification } from "~~/utils/scaffold-eth/notification";
 
 interface LightUpCardProps {
   burnAmount: string;
-  tokenSymbol?: string;
 }
 
-export const LightUpCard = ({ burnAmount, tokenSymbol = "DAPPX" }: LightUpCardProps) => {
+export const LightUpCard = ({ burnAmount }: LightUpCardProps) => {
+  const { address } = useAccount();
   const [isLightUpLoading, setIsLightUpLoading] = useState(false);
-
+  const { data: tokenSymbol } = useScaffoldReadContract({
+    contractName: "UnlockProtocolToken",
+    functionName: "symbol",
+  });
+  const { data: upTokenBalance } = useScaffoldReadContract({
+    contractName: "UnlockProtocolToken",
+    functionName: "balanceOf",
+    args: [address],
+  });
   const { writeContractAsync: lightUp } = useScaffoldWriteContract("DGTokenVendor");
 
-  const { swapToken, approveSwapToken, hasSufficientSwapTokenAllowance, refreshSwapTokenAllowance } = useTokenAllowance(
+  const { baseToken, approveBaseToken, hasSufficientBaseTokenAllowance, refreshBaseTokenAllowance } = useTokenAllowance(
     {
       vendorContractName: "DGTokenVendor",
     },
   );
 
-  const hasAllowanceForBurnAmount = hasSufficientSwapTokenAllowance(burnAmount);
+  const hasAllowanceForBurnAmount = hasSufficientBaseTokenAllowance(burnAmount);
 
   const handleApproveTokens = async () => {
     if (burnAmount && parseFloat(burnAmount) > 0) {
-      await approveSwapToken();
-      await refreshSwapTokenAllowance();
+      await approveBaseToken();
+      await refreshBaseTokenAllowance();
     }
   };
 
@@ -36,7 +45,7 @@ export const LightUpCard = ({ burnAmount, tokenSymbol = "DAPPX" }: LightUpCardPr
         functionName: "lightUp",
       });
       notification.success("Successfully lit up and increased fuel!");
-      await refreshSwapTokenAllowance();
+      await refreshBaseTokenAllowance();
       return true;
     } catch (err) {
       console.error("Error lighting up:", err);
@@ -47,8 +56,10 @@ export const LightUpCard = ({ burnAmount, tokenSymbol = "DAPPX" }: LightUpCardPr
     }
   };
 
-  const isDisabled = swapToken.isApproving || isLightUpLoading;
-  const showApproveButton = !hasAllowanceForBurnAmount && !!burnAmount && parseFloat(burnAmount) > 0;
+  const isDisabled = baseToken.isApproving || isLightUpLoading;
+  const hasSufficientBalance =
+    upTokenBalance !== undefined && !!burnAmount && upTokenBalance >= BigInt(parseFloat(burnAmount));
+  const showApproveButton = !hasAllowanceForBurnAmount && hasSufficientBalance;
 
   return (
     <div className="bg-base-100 rounded-box p-4">
@@ -68,11 +79,11 @@ export const LightUpCard = ({ burnAmount, tokenSymbol = "DAPPX" }: LightUpCardPr
       <div className="flex gap-2">
         {showApproveButton && (
           <button
-            className={`btn flex-1 btn-primary ${swapToken.isApproving ? "loading" : ""}`}
+            className={`btn flex-1 btn-primary ${baseToken.isApproving ? "loading" : ""}`}
             onClick={handleApproveTokens}
-            disabled={isDisabled || swapToken.isApproving}
+            disabled={isDisabled || baseToken.isApproving}
           >
-            {swapToken.isApproving ? (
+            {baseToken.isApproving ? (
               <>
                 <span className="loading loading-spinner loading-xs"></span>
                 Approving...

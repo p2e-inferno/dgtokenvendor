@@ -22,7 +22,7 @@ export const UserProfile = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "symbol",
   });
 
@@ -33,7 +33,7 @@ export const UserProfile = () => {
   });
 
   const { data: yourUPTokenBalance } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "balanceOf",
     args: [address],
   });
@@ -105,7 +105,7 @@ export const UserProfile = () => {
                   </div>
                   <div className="stat-title">{dgTokenSymbol} Balance</div>
                   <div className="stat-value">{parseFloat(formatEther(yourDGTokenBalance || 0n)).toFixed(2)}</div>
-                  <div className="stat-desc">Digital Game Token</div>
+                  <div className="stat-desc">DreadGang Token</div>
                 </div>
 
                 <div className="stat">

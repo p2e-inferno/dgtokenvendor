@@ -1,6 +1,5 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-
 /**
  * @example
  **/
@@ -327,7 +326,7 @@ const externalContracts = {
     },
   },
   84532: {
-    DAPPX: {
+    UnlockProtocolToken: {
       address: "0x4231F89f3F88F0346bCF997D54C140596Cc9E1A0",
       abi: [
         {

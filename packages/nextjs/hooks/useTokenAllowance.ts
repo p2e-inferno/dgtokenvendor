@@ -68,7 +68,7 @@ export const useTokenAllowance = ({ vendorContractName }: UseTokenAllowanceProps
   });
 
   const { data: swapTokenSymbol } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "symbol",
     query: { enabled: !!tokenConfig?.swapToken },
   });
@@ -89,7 +89,7 @@ export const useTokenAllowance = ({ vendorContractName }: UseTokenAllowanceProps
   });
 
   const { data: swapTokenAllowance, refetch: refetchSwapTokenAllowance } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "allowance",
     args: [userAddress as Address, vendorAddress as Address],
     query: {
@@ -104,7 +104,7 @@ export const useTokenAllowance = ({ vendorContractName }: UseTokenAllowanceProps
 
   // Setup contract writes
   const { writeContractAsync: writeBaseTokenAsync } = useScaffoldWriteContract("DGToken");
-  const { writeContractAsync: writeSwapTokenAsync } = useScaffoldWriteContract("DAPPX");
+  const { writeContractAsync: writeSwapTokenAsync } = useScaffoldWriteContract("UnlockProtocolToken");
 
   // Function to approve a token for the maximum amount (infinite approval)
   const approveToken = useCallback(
@@ -233,7 +233,7 @@ export const useTokenAllowance = ({ vendorContractName }: UseTokenAllowanceProps
         swapToken: {
           ...prev.swapToken,
           address: swapTokenAddr,
-          contractName: swapOk ? "DAPPX" : undefined,
+          contractName: swapOk ? "UnlockProtocolToken" : undefined,
           symbol: swapOk ? (swapTokenSymbol as string | undefined) : undefined,
           allowance: swapTokenAllowance || 0n,
           hasAllowance: (swapTokenAllowance || 0n) > 0n,

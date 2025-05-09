@@ -112,7 +112,7 @@ export const Header = () => {
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight text-primary">DGToken Vendor</span>
-            <span className="text-xs">DGT swaps and vibes</span>
+            <span className="text-xs">DG swaps and vibes</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">

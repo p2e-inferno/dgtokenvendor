@@ -10,7 +10,7 @@ export const VendorInfo = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "symbol",
   });
 
@@ -20,7 +20,7 @@ export const VendorInfo = () => {
   });
 
   const { data: upTokenName } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "name",
   });
 
@@ -33,7 +33,7 @@ export const VendorInfo = () => {
   });
 
   const { data: vendorUPTokenBalance } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "balanceOf",
     args: [vendorContractData?.address],
   });

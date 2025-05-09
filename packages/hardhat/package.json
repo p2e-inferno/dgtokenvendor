@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "account": "hardhat run scripts/listAccount.ts",
+    "sign": "hardhat run scripts/signMessage.ts",
     "account:generate": "hardhat run scripts/generateAccount.ts",
     "account:import": "hardhat run scripts/importAccount.ts",
     "chain": "hardhat node --network hardhat --no-deploy",

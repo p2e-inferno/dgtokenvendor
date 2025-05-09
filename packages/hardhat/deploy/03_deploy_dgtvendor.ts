@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { Contract, ethers } from "ethers";
-import { ownerAddress, devAddress } from "./02_deploy_digitoken";
+import { devAddress, councilAddress } from "./02_deploy_digitoken";
 /**
  * Deploys a contract named "DGToken" using the deployer account and
  * constructor arguments set to the deployer address
@@ -13,23 +13,22 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const { deploy } = hre.deployments;
   const dgToken = await hre.ethers.getContract<Contract>("DGToken", deployer);
   const dgTokenAddress = await dgToken.getAddress();
-  const upTokenAddress = "0x4231F89f3F88F0346bCF997D54C140596Cc9E1A0"; // DAPPX token deployed on base sepolia
   const initialExchangeRate = 10;
-  // const upTokenAddress = "0xaC27fa800955849d6D17cC8952Ba9dD6EAA66187"; // UP token address on base
-  // const dgTokenAddress = "0x04A79EA9dAF3F3FbA76e7CF231829f9cbAC8d9f1"; // DG token address on base
-  // const ownerAddress = "0xB34567C4cA697b39F72e1a8478f285329A98ed1b"; // Unlock DAO treasury on base
+  const timelockAddress = "0xB34567C4cA697b39F72e1a8478f285329A98ed1b"; // Unlock DAO treasury (timelock) on base
+  const upTokenAddress = "0xaC27fa800955849d6D17cC8952Ba9dD6EAA66187"; // UP token address on base
 
   const initialWhitelistedCollections = [
-    "0x269724DEed44Bb4Ed28aF80Beeb25b539AB855aB", // DG Nation
-    "0xffd0aa6000f5eb6c60f69676e7daafe3d96884d0", // DG Sponsors
-    "0x0c239bd2f6ba2b2657968cc84904391887f6ba2c", // P2E INFERNO Scholars
-    "0xf7a0f84a8d164187f2252c2098fb6828c68669ba", // DG DG LPs
-    "0x2f2455c5a946b0437265d1705d4a5f730c01f18a", // DG Partners
+    "0x9bf35b6750ad9ff45c880b36234c2b14570edb34", // P2E INFERNO IGNITION
+    "0xa9ec9e40200592fa3debcaa91fec23b181dbbe05", // DG Nation
+    "0x37cb4167d9d9fd5748d202da119d5e9a7d31b8d5", // DGToken Vendor Sponsor
+    "0x31152a3ead4f60ce3caeadfccc627360872e3a6a", // DGToken Vendor Supporter
+    "0xfd37cf2317fa16db3aafea226d20295bfbf8da98", // DG Nation Tourist
+    "0xe34900ace360310ce4e12a5a6ad586dee445c703" // DGToken CEx
   ];
 
   await deploy("DGTokenVendor", {
     from: deployer,
-    args: [upTokenAddress, dgTokenAddress, initialExchangeRate, devAddress],
+    args: [upTokenAddress, dgTokenAddress, initialExchangeRate, devAddress, councilAddress],
     log: true,
     autoMine: true,
   });
@@ -37,7 +36,7 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
   // Initialize the application
   const dgTokenVendor = await hre.ethers.getContract<Contract>("DGTokenVendor", deployer);
   await dgTokenVendor.initializeWhitelistedCollections(initialWhitelistedCollections);
-  await dgTokenVendor.transferOwnership(ownerAddress);
+  await dgTokenVendor.transferOwnership(timelockAddress);
 };
 
 export default deployDGToken;

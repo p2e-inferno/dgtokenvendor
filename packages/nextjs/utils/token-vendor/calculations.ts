@@ -23,14 +23,14 @@ export const calculateTokenConversion = (
   if (inputAmount <= 0 || rate <= 0) return "0";
 
   if (action === "buy") {
-    // For buy: Calculate DG tokens received when spending DAPPX
+    // For buy: Calculate DG tokens received when spending UnlockProtocolToken
     // Formula: (amount - fee) * exchangeRate
     const fee = (inputAmount * Number(feeConfig.buyFeeBps)) / 10000;
     const netAmount = inputAmount - fee;
     const tokensReceived = netAmount * rate;
     return tokensReceived.toFixed(6);
   } else {
-    // For sell: Calculate DAPPX received when selling DG tokens
+    // For sell: Calculate UnlockProtocolToken received when selling DG tokens
     // Formula: (amount / exchangeRate) - fee
     const tokenAmount = inputAmount / rate;
     const fee = (tokenAmount * Number(feeConfig.sellFeeBps)) / 10000;

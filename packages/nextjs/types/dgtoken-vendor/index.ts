@@ -1,5 +1,5 @@
 export type TokenAction = "buy" | "sell";
-export type TokenContractName = "DGToken" | "DAPPX";
+export type TokenContractName = "DGToken" | "UnlockProtocolToken";
 export type VendorContractName = "DGTokenVendor";
 export enum UserStage {
   PLEB = 0,

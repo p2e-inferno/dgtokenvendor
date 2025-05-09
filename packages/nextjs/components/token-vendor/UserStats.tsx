@@ -12,7 +12,7 @@ export const UserStats = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "symbol",
   });
 
@@ -28,7 +28,7 @@ export const UserStats = () => {
   });
 
   const { data: yourUPTokenBalance } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "balanceOf",
     args: [address],
   });

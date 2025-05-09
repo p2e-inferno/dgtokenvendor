@@ -17,7 +17,7 @@ export const SellTokens = () => {
   });
 
   const { data: upTokenSymbol } = useScaffoldReadContract({
-    contractName: "DAPPX",
+    contractName: "UnlockProtocolToken",
     functionName: "symbol",
   });
 

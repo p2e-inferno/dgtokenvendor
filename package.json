@@ -9,6 +9,7 @@
   },
   "scripts": {
     "account": "yarn hardhat:account",
+    "sign": "yarn workspace @se-2/hardhat sign",
     "account:generate": "yarn workspace @se-2/hardhat account:generate",
     "account:import": "yarn workspace @se-2/hardhat account:import",
     "chain": "yarn hardhat:chain",

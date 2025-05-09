@@ -23,7 +23,6 @@ export const PowerUpActionsCard = ({
   nextStageLabel,
   nextStageConfig,
   canUpgrade,
-  tokenSymbol = "DAPPX",
 }: PowerUpActionsCardProps) => {
   return (
     <div className="card bg-base-200 shadow-xl border border-secondary/30">
@@ -32,7 +31,7 @@ export const PowerUpActionsCard = ({
 
         <div className="space-y-4 mt-4">
           {/* Light Up Action */}
-          <LightUpCard burnAmount={burnAmount} tokenSymbol={tokenSymbol} />
+          <LightUpCard burnAmount={burnAmount} />
 
           {/* Upgrade Stage Action */}
           <UpgradeStageCard
