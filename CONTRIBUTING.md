@@ -1,86 +1,92 @@
-# Welcome to Scaffold-ETH 2 Contributing Guide
+# Welcome to DreadGang Token Vendor Contributing Guide
 
-Thank you for investing your time in contributing to Scaffold-ETH 2!
+Thank you for your interest in contributing to the DreadGang Token Vendor project!
 
-This guide aims to provide an overview of the contribution workflow to help us make the contribution process effective for everyone involved.
+This guide will help you get started with contributing to our unique NFT-gated, progression-based DeFi platform, built with [Scaffold-ETH 2](https://github.com/scaffold-eth/scaffold-eth-2). Whether you're here to squash bugs, add features, or improve documentation, your help is valued.
 
 ## About the Project
 
-Scaffold-ETH 2 is a minimal and forkable repo providing builders with a starter kit to build decentralized applications on Ethereum.
+DreadGang Token Vendor is a next-generation onchain experience: a smart contract-powered ecosystem where NFTs unlock exclusive trading, events, and user progression. The project leverages Scaffold-ETH 2 as its foundation, but adds:
 
-Read the [README](README.md) to get an overview of the project.
+- NFT-gated access to token trading and features
+- Multi-stage user progression (PLEB → HUSTLER → OG)
+- Points and fuel system for gamified DeFi
+- Transparent, secure fee and admin controls
+
+Read the [README](README.md) for a full overview of the system and its architecture.
 
 ### Vision
 
-The goal of Scaffold-ETH 2 is to provide the primary building blocks for a decentralized application.
-
-The repo can be forked to include integrations and more features, but we want to keep the master branch simple and minimal.
+Our goal is to create a modular, extensible, and fun DeFi playground where NFTs are your passport to new onchain adventures. We encourage creative integrations and new features—just keep things clean, focused, and maintainable.
 
 ### Project Status
 
-The project is under active development.
+DreadGang Token Vendor is under active development. You can view open Issues, follow the roadmap, and contribute to the project.
 
-You can view the open Issues, follow the development process and contribute to the project.
+## Getting Started
 
-## Getting started
-
-You can contribute to this repo in many ways:
+You can contribute in many ways:
 
 - Solve open issues
-- Report bugs or feature requests
-- Improve the documentation
+- Report bugs or request features
+- Improve documentation
+- Suggest new NFT integrations or progression mechanics
 
-Contributions are made via Issues and Pull Requests (PRs). A few general guidelines for contributions:
+Contributions are made via Issues and Pull Requests (PRs). Please:
 
-- Search for existing Issues and PRs before creating your own.
-- Contributions should only fix/add the functionality in the issue OR address style issues, not both.
-- If you're running into an error, please give context. Explain what you're trying to do and how to reproduce the error.
-- Please use the same formatting in the code repository. You can configure your IDE to do it by using the prettier / linting config files included in each package.
-- If applicable, please edit the README.md file to reflect the changes.
+- Search for existing Issues/PRs before creating new ones
+- Keep PRs focused (one feature/fix per PR)
+- Provide context and reproduction steps for bugs
+- Follow the code style (see Prettier/lint configs)
+- Update the README or docs if your change affects usage
 
 ### Issues
 
-Issues should be used to report problems, request a new feature, or discuss potential changes before a PR is created.
+Use Issues to report problems, request features, or discuss changes before opening a PR.
 
-#### Solve an issue
+#### Solve an Issue
 
-Scan through our [existing issues](https://github.com/scaffold-eth/scaffold-eth-2/issues) to find one that interests you.
+Browse [existing issues](https://github.com/dreadgang/dgtokenvendor/issues) to find something interesting. Assign yourself and open a PR when ready.
 
-If a contributor is working on the issue, they will be assigned to the individual. If you find an issue to work on, you are welcome to assign it to yourself and open a PR with a fix for it.
+#### Create a New Issue
 
-#### Create a new issue
+If you don't see your issue, open a new one. Please:
 
-If a related issue doesn't exist, you can open a new issue.
-
-Some tips to follow when you are creating an issue:
-
-- Provide as much context as possible. Over-communicate to give the most details to the reader.
-- Include the steps to reproduce the issue or the reason for adding the feature.
-- Screenshots, videos etc., are highly appreciated.
+- Give as much context as possible
+- Include steps to reproduce or describe the feature
+- Screenshots, videos, or code snippets are appreciated
 
 ### Pull Requests
 
 #### Pull Request Process
 
-We follow the ["fork-and-pull" Git workflow](https://github.com/susam/gitpr)
+We follow the [fork-and-pull Git workflow](https://github.com/susam/gitpr):
 
 1. Fork the repo
-2. Clone the project
+2. Clone your fork
 3. Create a new branch with a descriptive name
-4. Commit your changes to the new branch
-5. Push changes to your fork
-6. Open a PR in our repository and tag one of the maintainers to review your PR
+4. Commit your changes
+5. Push to your fork
+6. Open a PR and tag a maintainer for review
 
-Here are some tips for a high-quality pull request:
+Tips for a great PR:
 
-- Create a title for the PR that accurately defines the work done.
-- Structure the description neatly to make it easy to consume by the readers. For example, you can include bullet points and screenshots instead of having one large paragraph.
-- Add the link to the issue if applicable.
-- Have a good commit message that summarises the work done.
+- Clear, descriptive title and summary
+- Use bullet points and screenshots if helpful
+- Link to the relevant issue
+- Good commit messages
 
-Once you submit your PR:
+After submitting:
 
-- We may ask questions, request additional information or ask for changes to be made before a PR can be merged. Please note that these are to make the PR clear for everyone involved and aims to create a frictionless interaction process.
-- As you update your PR and apply changes, mark each conversation resolved.
+- Be ready for questions or requested changes
+- Mark conversations resolved as you address feedback
 
-Once the PR is approved, we'll "squash-and-merge" to keep the git commit history clean.
+Once approved, we'll "squash-and-merge" to keep history clean.
+
+## Community & Code of Conduct
+
+We strive for a welcoming, inclusive community. Please be respectful and constructive in all interactions.
+
+---
+
+Ready to help shape the future of NFT-powered DeFi? Dive in, experiment, and let's build the DreadGang movement together!

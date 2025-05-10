@@ -1,72 +1,78 @@
-# DGToken Vendor System
+# DreadGang Token Vendor
 
-This project implements a token vendor system with advanced access control and NFT-based authorization.
+Welcome to the DreadGang Token Vendor – where NFTs unlock a new world of onchain exploration, token trading, progression, and gamified DeFi. This project is more than a token swap: it's a smart contract-powered ecosystem where your NFT is your ticket to exclusive events, experiences, trading, leveling up, and earning rewards.
 
-## Overview
+## 🚀 What is DGToken Vendor?
 
-The system consists of several smart contracts:
+DGToken Vendor is a next-generation token exchange platform built on Ethereum. It combines:
 
-1. **DGToken**: A base ERC20 token with advanced access control
-2. **SwapToken**: A secondary ERC20 token that can be traded with the base token
-3. **DGTokenVendor**: A token exchange platform that allows holders of specific NFTs to trade between tokens
-4. **MockNFT**: A simple NFT contract for testing
+- **NFT-gated access**: Only holders of whitelisted NFTs can trade.
+- **Multi-stage user progression**: Users level up from PLEB to HUSTLER to OG, earning points and fuel as they trade.
+- **Gamified mechanics**: Burn tokens to gain fuel, hit thresholds to earn points, and upgrade your stage for better perks.
+- **Transparent, secure fees**: All fees are tracked and can be withdrawn by authorized admins.
+- **Robust admin controls**: Fine-tune rates, fees, and whitelists with built-in cooldowns for safety.
 
-## Key Features
+## 🏗️ System Architecture
 
-- **NFT-Based Access**: Only holders of NFTs from whitelisted collections can use the vendor
-- **Fee Collection**: The vendor charges a 1% fee on all transactions
-- **Role-Based Access Control**: Uses OpenZeppelin's AccessControlDefaultAdminRules
-- **Rate Controls**: Exchange rate can only be changed once every 90 days
-- **Fee Separation**: Fees are tracked separately from token balances and can be withdrawn independently
+- **BaseToken**: The primary ERC20 token (UnlockProtocolToken - UP) for trading.
+- **DGToken**: The swap ERC20 token ("DreadGang Token").
+- **DGTokenVendor**: The heart of the system – a smart contract that manages trading, progression, and access.
+- **MockNFT**: A simple NFT contract for testing and local development.
 
-## Smart Contract Roles
+## 🌟 Key Features
 
-- **DEFAULT_ADMIN_ROLE**: Full administrative access
-- **VENDOR_MANAGER_ROLE**: Can manage whitelisted collections and exchange rates
+- **NFT-Based Access**: Only whitelisted NFT holders can buy/sell tokens.
+- **User Progression**: Earn points and fuel as you trade, burn tokens to "light up," and upgrade your stage for higher limits.
+- **Fee System**: 1% buy fee, 2% sell fee (default, configurable by admin). Fees are separated and withdrawable.
+- **Admin Controls**: Manage whitelists, rates, fees, and system addresses. All sensitive changes have cooldowns for security.
+- **Security**: Custom errors, reentrancy protection, pausable contract, and OpenZeppelin best practices.
 
-## Usage
+## 👤 User Journey
 
-### As an Admin
+1. **Get a Whitelisted NFT**: Mint or acquire an NFT from an approved collection.
+2. **Connect & Approve**: Approve the vendor contract to spend your tokens.
+3. **Trade**: Use `buyTokens` to purchase swap tokens, or `sellTokens` to convert back.
+4. **Progress**: Hit trading thresholds to earn points, burn tokens to gain fuel, and upgrade your stage for better trading limits.
 
-1. Deploy the contracts using the deployment script
-2. Manage whitelisted NFT collections using `addWhitelistedCollection`
-3. Update exchange rates (max once per 90 days) using `setExchangeRate`
-3. Update fee rates (max once per 90 days) using `setExchangeRate`
-3. Update fees receiver address (max once per 90 days) using `setDevAddress`
-4. Withdraw collected fees with `withdrawFees`
+## 🛠️ Admin Journey
 
-### As a User
+- **Whitelist Management**: Add NFT collections with `initializeWhitelistedCollections` (max 10).
+- **Rates & Fees**: Adjust with `setExchangeRate` and `setFeeRates` (subject to cooldowns).
+- **Withdrawals**: Use `withdrawFees` and `withdrawETH` to collect protocol fees.
+- **Stage & System Config**: Fine-tune user progression and cooldowns with `setStageConfig` and `setCooldownConfig`.
 
-1. Obtain one of the whitelisted NFTs
-2. Approve the vendor contract to spend your tokens
-3. Use `buyTokens` to purchase swap tokens with base tokens
-4. Use `sellTokens` to sell swap tokens for base tokens
+## ⚡ Quick Start
 
-## Configuration
+### Prerequisites
 
-- Maximum whitelist size: 10 collections
-- Buy Fee percentage: 1%
-- Sell Fee percentage: 2%
-- Rate change cooldown: 90 days
+- Node.js & Yarn
+- [Hardhat](https://hardhat.org/) for smart contract dev
 
-## Development
-
-The contracts are built with Solidity 0.8.20 and use OpenZeppelin contracts for security best practices.
+### Install & Deploy
 
 ```bash
-# Install dependencies
+# Install all dependencies
 yarn install
 
-# Deploy contracts
+# Deploy contracts (from packages/hardhat)
 yarn deploy
 
-# Run frontend
+# Run the frontend (from packages/nextjs)
 yarn start
 ```
 
-## Security Features
+### Message Signing (for contract admin)
 
-- Custom error definitions for better debugging
-- Role-based access control for administrative functions
-- Fee tracking system to prevent improper token withdrawals
-- NFT validation checks for each transaction
+See `packages/hardhat/README-sign-message.md` for secure message signing instructions.
+
+## 🤝 Contributing
+
+We welcome your ideas, code, and feedback! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, coding standards, and how to get involved.
+
+## 🛡️ Security & Disclaimer
+
+This project is for **educational and informational purposes only**. While we follow best practices, no guarantees are made regarding security or fitness for production. **Always audit before deploying to production.**
+
+---
+
+Join the DreadGang movement – where your NFT is your passport to a new era of onchain exploration!

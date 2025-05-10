@@ -15,7 +15,7 @@ const Home: NextPage = () => {
         <div className="text-center mb-12 max-w-2xl">
           <h1 className="text-5xl font-bold text-primary mb-4">DG Token Vendor</h1>
           <p className="text-lg text-base-content/70">
-            Buy, sell, and light up your path to an OG in the DreadGang. Connect your wallet to get started!
+            Buy, sell, and light up your path to an OG in the DreadGang Nation. Connect your wallet to get started!
           </p>
         </div>
 
