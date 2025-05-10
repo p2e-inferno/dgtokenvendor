@@ -2532,6 +2532,7 @@ __metadata:
     eslint-config-next: ~14.2.15
     eslint-config-prettier: ~8.10.0
     eslint-plugin-prettier: ~5.2.1
+    framer-motion: ^12.10.5
     next: ~14.2.11
     next-nprogress-bar: ~2.3.13
     next-themes: ~0.3.0
@@ -7942,12 +7943,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:^12.7.4":
-  version: 12.7.4
-  resolution: "framer-motion@npm:12.7.4"
+"framer-motion@npm:^12.10.5":
+  version: 12.10.5
+  resolution: "framer-motion@npm:12.10.5"
   dependencies:
-    motion-dom: ^12.7.4
-    motion-utils: ^12.7.2
+    motion-dom: ^12.10.5
+    motion-utils: ^12.9.4
     tslib: ^2.4.0
   peerDependencies:
     "@emotion/is-prop-valid": "*"
@@ -7960,7 +7961,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 8fce21facbd124fe578b97eca51045b20ab975270eb266799602b494709b97d55906938a45e6c61b138d2f8d2e142c640aea199a9941f46b5a618b1a2cec8492
+  checksum: f561a6ad69fd09b5b957bc9e75b7a0db6ea7a8a482d837443736c305071e6f4d92e0c55793cb4ba047a18140fe89e6981ea06853a53307ec821db6981e16179b
   languageName: node
   linkType: hard
 
@@ -10310,19 +10311,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.7.4":
-  version: 12.7.4
-  resolution: "motion-dom@npm:12.7.4"
+"motion-dom@npm:^12.10.5":
+  version: 12.10.5
+  resolution: "motion-dom@npm:12.10.5"
   dependencies:
-    motion-utils: ^12.7.2
-  checksum: 3d43d338bd188fb9144bd8f8e45fb7d8b935e38d3d7595f5cd2e7d960b3758f86f2777a31eb1bafd9a8c98b85c512cc19490e43fafbda715eda3ef0e9cfa4668
+    motion-utils: ^12.9.4
+  checksum: 7d24097ead5c4fab4e99a650628fddf054f3c57ee846d4f1b8eaec64ccaa989c9eda78e3d95125e1dc51e433ac23a8a3452414219014fa3f1438fe826ae60792
   languageName: node
   linkType: hard
 
-"motion-utils@npm:^12.7.2":
-  version: 12.7.2
-  resolution: "motion-utils@npm:12.7.2"
-  checksum: 212b6d6ef8c396deb4a0ec21ae499866d571abfeef3c73db2a4b549b178b7a6f790d721c6724af2d9547a3b9c325e0c24173117e6a1c346d8026dfb42893b460
+"motion-utils@npm:^12.9.4":
+  version: 12.9.4
+  resolution: "motion-utils@npm:12.9.4"
+  checksum: 7fe97beb216e0591afac3188e1ad10de40099b9092813078e2b5d86b4403331e3006f5866e75bc3e14097379dd456fd6e79b95cee9d685001690630ea7fa54d0
   languageName: node
   linkType: hard
 
@@ -12304,7 +12305,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
-    framer-motion: ^12.7.4
     husky: ^9.1.7
     lint-staged: ~13.2.2
   languageName: unknown

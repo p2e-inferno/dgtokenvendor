@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { Contract, ethers } from "ethers";
+import { Contract } from "ethers";
 import { devAddress, councilAddress } from "./02_deploy_digitoken";
 /**
  * Deploys a contract named "DGToken" using the deployer account and

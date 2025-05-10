@@ -206,7 +206,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
   describe("🧪 Token Exchange Functionality", function () {
     it("Should not allow buying tokens without NFT", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // First check minimum buy amount
       const stageConstants = await vendor.getStageConstants();
@@ -226,7 +226,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should allow buying tokens with NFT", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // First check minimum buy amount
       const stageConstants = await vendor.getStageConstants();
@@ -348,7 +348,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should track fees correctly", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
@@ -406,7 +406,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
   describe("🧪 Fee Management", function () {
     it("Should allow owner to withdraw fees", async function () {
-      const [owner, user1, feeReceiver] = await ethers.getSigners();
+      const [owner, user1] = await ethers.getSigners();
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
@@ -465,7 +465,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should not allow non-owner to withdraw fees", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       await expect(vendor.connect(user1).withdrawFees()).to.be.revertedWithCustomError(vendor, "UnauthorizedCaller");
     });
@@ -488,7 +488,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should allow owner to withdraw ETH", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [owner] = await ethers.getSigners();
       const ethAmount = ethers.parseEther("1.0");
 
       // Send ETH to contract
@@ -515,7 +515,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should not allow non-owner to withdraw ETH", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       await expect(vendor.connect(user1).withdrawETH()).to.be.revertedWithCustomError(vendor, "UnauthorizedCaller");
     });
@@ -594,7 +594,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
   describe("🧪 NFT Validation", function () {
     it("Should correctly detect user with an NFT", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // Initially user has no NFT
       expect(await vendor.hasValidKey(user1.address)).to.be.false;
@@ -607,7 +607,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should correctly identify valid collection for user", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
       const mockNFTAddress = await mockNFT.getAddress();
 
       // Initially user has no NFT
@@ -624,7 +624,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
   describe("🧪 Integration Tests", function () {
     it("Should handle full buy/sell cycle", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
@@ -676,7 +676,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should handle exchange rate changes", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
@@ -718,7 +718,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
     });
 
     it("Should handle fee rate changes", async function () {
-      const [owner, user1] = await ethers.getSigners();
+      const [user1] = await ethers.getSigners();
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
@@ -843,7 +843,7 @@ describe("🧪 Staging Functionality", function () {
   }
 
   it("Should allow user to light up and gain fuel", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     const plebConfig = await vendor.getStageConfig(0); // UserStage.PLEB
@@ -863,7 +863,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should cap fuel at MAX_FUEL_LIMIT", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     const plebConfig = await vendor.getStageConfig(0); // UserStage.PLEB
@@ -885,7 +885,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should award points for qualifying buys", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     const plebConfig = await vendor.getStageConfig(0); // UserStage.PLEB
@@ -921,7 +921,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should allow stage upgrade with sufficient points", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     const plebConfig = await vendor.getStageConfig(0); // UserStage.PLEB
@@ -954,7 +954,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should prevent stage upgrade with insufficient points", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
     // User starts with 0 points
     await expect(vendor.connect(user1).upgradeStage()).to.be.revertedWithCustomError(
@@ -972,7 +972,7 @@ describe("🧪 Staging Functionality", function () {
     // This is tricky without a direct setter. We'll simulate by upgrading twice.
 
     // Get minimum amounts to use from stageConstants
-    const stageConstants = await vendor.getStageConstants();
+    // const stageConstants = await vendor.getStageConstants();
 
     // --- Upgrade 1: PLEB -> HUSTLER ---
     const plebConfig = await vendor.getStageConfig(0);
@@ -1030,7 +1030,7 @@ describe("🧪 Staging Functionality", function () {
 
   // Add more tests for sell limits, daily limits, OG cooldown etc.
   it("Should respect daily selling limits based on stage", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     // Get stage configurations to understand limits
@@ -1067,9 +1067,9 @@ describe("🧪 Staging Functionality", function () {
     await yourToken.connect(user1).approve(vendorAddress, tokensToSell);
 
     // Get the tokens equivalent of the daily limit
-    const stageConstants = await vendor.getStageConstants();
-    const baseTokenLimit = dailyLimit;
-    const swapTokenLimit = baseTokenLimit * BigInt(5); // Exchange rate is 5
+    // const stageConstants = await vendor.getStageConstants();
+    // const baseTokenLimit = dailyLimit;
+    // const swapTokenLimit = baseTokenLimit * BigInt(5); // Exchange rate is 5
 
     // If tokens to sell exceeds the daily limit, the transaction should revert
     if (tokensToSell / BigInt(5) > dailyLimit) {
@@ -1087,7 +1087,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should calculate max sell transaction based on stage maxSellBps", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     // Get max sell percentage for the PLEB stage
@@ -1265,7 +1265,7 @@ describe("🧪 Staging Functionality", function () {
   });
 
   it("Should increase daily sell limit with fuel", async function () {
-    const [owner, user1] = await ethers.getSigners();
+    const [user1] = await ethers.getSigners();
     await giveUserValidKey(user1.address);
 
     // Get stage configuration for PLEB
