@@ -2,7 +2,9 @@
 
 import { AddressCopyIcon } from "./AddressCopyIcon";
 import { AddressLinkWrapper } from "./AddressLinkWrapper";
+import { useName } from "@coinbase/onchainkit/identity";
 import { Address as AddressType, getAddress, isAddress } from "viem";
+import { base } from "viem/chains";
 import { normalize } from "viem/ens";
 import { useEnsAvatar, useEnsName } from "wagmi";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
@@ -102,11 +104,19 @@ export const Address = ({
     },
   });
 
+  const { data: baseName, isLoading: isBaseNameLoading } = useName({
+    address: checkSumAddress as `0x${string}`,
+    chain: base as any,
+  });
+
   const shortAddress = checkSumAddress?.slice(0, 6) + "..." + checkSumAddress?.slice(-4);
   const displayAddress = format === "long" ? checkSumAddress : shortAddress;
-  const displayEnsOrAddress = ens || displayAddress;
 
-  const showSkeleton = !checkSumAddress || (!onlyEnsOrAddress && (ens || isEnsNameLoading));
+  const resolvedName = ens || baseName;
+  const displayEnsOrAddress = resolvedName || displayAddress;
+  const isNameLoading = isEnsNameLoading || isBaseNameLoading;
+
+  const showSkeleton = !checkSumAddress || (!onlyEnsOrAddress && (resolvedName || isNameLoading));
 
   const addressSize = showSkeleton && !onlyEnsOrAddress ? getPrevSize(textSizeMap, size, 2) : size;
   const ensSize = getNextSize(textSizeMap, addressSize);
@@ -153,7 +163,7 @@ export const Address = ({
       </div>
       <div className="flex flex-col">
         {showSkeleton &&
-          (isEnsNameLoading ? (
+          (isNameLoading ? (
             <div className={`ml-1.5 skeleton rounded-lg font-bold ${textSizeMap[ensSize]}`}>
               <span className="invisible">{shortAddress}</span>
             </div>
@@ -163,7 +173,7 @@ export const Address = ({
                 disableAddressLink={disableAddressLink}
                 blockExplorerAddressLink={blockExplorerAddressLink}
               >
-                {ens}
+                {resolvedName}
               </AddressLinkWrapper>
             </span>
           ))}
