@@ -4,7 +4,7 @@ Welcome to the DreadGang Token Vendor – where NFTs unlock a new world of oncha
 
 ## 🚀 What is DGToken Vendor?
 
-DGToken Vendor is a next-generation token exchange platform built on Ethereum. It combines:
+DGToken Vendor is an experimental token exchange platform built on Ethereum. It combines:
 
 - **NFT-gated access**: Only holders of whitelisted NFTs can trade.
 - **Multi-stage user progression**: Users level up from PLEB to HUSTLER to OG, earning points and fuel as they trade.

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
+import { PrivyProvider } from "@privy-io/react-auth";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
@@ -49,18 +50,28 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
   }, []);
 
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ProgressBar height="3px" color="#2299dd" />
-        <OnchainKitProvider apiKey={onchainKitApiKey} chain={base as any}>
-          <RainbowKitProvider
-            avatar={BlockieAvatar}
-            theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
-          >
-            <ScaffoldEthApp>{children}</ScaffoldEthApp>
-          </RainbowKitProvider>
-        </OnchainKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <PrivyProvider
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
+      clientId={process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || ""}
+      config={{
+        embeddedWallets: {
+          createOnLogin: "all-users",
+        },
+      }}
+    >
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <ProgressBar height="3px" color="#2299dd" />
+          <OnchainKitProvider apiKey={onchainKitApiKey} chain={base as any}>
+            <RainbowKitProvider
+              avatar={BlockieAvatar}
+              theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+            >
+              <ScaffoldEthApp>{children}</ScaffoldEthApp>
+            </RainbowKitProvider>
+          </OnchainKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </PrivyProvider>
   );
 };

@@ -107,7 +107,7 @@ export const Header = () => {
         </div>
         <Link href="/" passHref className="hidden lg:flex items-center gap-3 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image src="/dgTokenVendor_logo.png" alt="DGToken Vendor Logo" layout="fill" objectFit="contain" />
+            <Image src="/dgTokenVendor_logo.png" alt="DGToken Vendor Logo" fill className="object-contain" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight text-primary">DGToken Vendor</span>

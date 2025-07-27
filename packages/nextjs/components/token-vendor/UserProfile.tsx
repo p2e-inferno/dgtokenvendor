@@ -103,8 +103,8 @@ export const UserProfile = () => {
                         <Image
                           src="/dgToken_logo.png"
                           alt={`${dgTokenSymbol || "DGToken"} logo`}
-                          layout="fill"
-                          objectFit="cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                     </div>
