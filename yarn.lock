@@ -16216,7 +16216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:~5.5.4":
+"typescript@npm:5.5.4":
   version: 5.5.4
   resolution: "typescript@npm:5.5.4"
   bin:
@@ -16226,7 +16226,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A~5.5.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A5.5.4#~builtin<compat/typescript>":
   version: 5.5.4
   resolution: "typescript@patch:typescript@npm%3A5.5.4#~builtin<compat/typescript>::version=5.5.4&hash=a1c5e5"
   bin:

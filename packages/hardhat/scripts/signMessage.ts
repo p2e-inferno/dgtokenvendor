@@ -4,7 +4,7 @@ import { resolve } from "path";
 import password from "@inquirer/password";
 
 // The message to sign
-const message = "YOUR_MESSAGE_TO_SIGN" 
+const message = "YOUR_MESSAGE_TO_SIGN";
 
 async function main() {
   // Load environment variables from the root .env file
@@ -27,12 +27,10 @@ async function main() {
     let wallet: ethers.Wallet | ethers.HDNodeWallet;
     try {
       wallet = await Wallet.fromEncryptedJson(encryptedKey, pass);
-    } catch (e) {
+    } catch {
       console.log("❌ Failed to decrypt private key. Wrong password?");
       return;
     }
-
-  
     // Sign the message
     const signature = await wallet.signMessage(message);
 

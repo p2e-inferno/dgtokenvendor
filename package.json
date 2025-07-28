@@ -56,6 +56,6 @@
     "node": ">=18.18.0"
   },
   "resolutions": {
-    "typescript": "~5.5.4"
+    "typescript": "5.5.4"
   }
 }

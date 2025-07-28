@@ -70,7 +70,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       yourTokenAddress,
       INITIAL_EXCHANGE_RATE,
       devAddress,
-      stewardAddress
+      stewardAddress,
     )) as DGTokenVendor;
     vendorAddress = await vendor.getAddress();
     console.log("📝 DGTokenVendor deployed at:", vendorAddress);
@@ -80,7 +80,7 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       const stageConstants = await vendor.getStageConstants();
       console.log("📝 Minimum buy amount:", ethers.formatEther(stageConstants.minBuyAmount));
       console.log("📝 Minimum sell amount:", ethers.formatEther(stageConstants.minSellAmount));
-    } catch (e) {
+    } catch {
       console.log("⚠️ Could not get stage constants");
     }
 
@@ -539,13 +539,13 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
     it("Should correctly report if exchange rate can be changed", async function () {
       // Initially should be false
-      expect(await vendor.canChangeExchangeRate()).to.be.false;
+      void expect(await vendor.canChangeExchangeRate()).to.be.false;
 
       // Fast forward 90 days
       await time.increase(DAYS_90);
 
       // Now should be true
-      expect(await vendor.canChangeExchangeRate()).to.be.true;
+      void expect(await vendor.canChangeExchangeRate()).to.be.true;
     });
   });
 
@@ -582,13 +582,13 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
 
     it("Should correctly report if fee rates can be changed", async function () {
       // Initially should be false
-      expect(await vendor.canChangeFeeRates()).to.be.false;
+      void expect(await vendor.canChangeFeeRates()).to.be.false;
 
       // Fast forward 100 days
       await time.increase(DAYS_100);
 
       // Now should be true
-      expect(await vendor.canChangeFeeRates()).to.be.true;
+      void expect(await vendor.canChangeFeeRates()).to.be.true;
     });
   });
 
@@ -597,13 +597,13 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       const [user1] = await ethers.getSigners();
 
       // Initially user has no NFT
-      expect(await vendor.hasValidKey(user1.address)).to.be.false;
+      void expect(await vendor.hasValidKey(user1.address)).to.be.false;
 
       // Mint an NFT to user1
       await giveUserValidKey(user1.address);
 
       // Now user should have an NFT
-      expect(await vendor.hasValidKey(user1.address)).to.be.true;
+      void expect(await vendor.hasValidKey(user1.address)).to.be.true;
     });
 
     it("Should correctly identify valid collection for user", async function () {
@@ -619,7 +619,6 @@ describe("🚩 DGTokenVendor Contract Tests", function () {
       // Now user should have mockNFT as valid collection
       expect(await vendor.getFirstValidCollection(user1.address)).to.equal(mockNFTAddress);
     });
-
   });
 
   describe("🧪 Integration Tests", function () {
@@ -823,7 +822,7 @@ describe("🧪 Staging Functionality", function () {
       yourTokenAddress,
       5, // INITIAL_EXCHANGE_RATE
       devAddress,
-      stewardAddress
+      stewardAddress,
     )) as DGTokenVendor;
     vendorAddress = await vendor.getAddress();
 

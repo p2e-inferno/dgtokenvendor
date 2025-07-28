@@ -6,7 +6,7 @@ import { DeployFunction } from "hardhat-deploy/types";
  * constructor arguments set to the deployer address
  *
  * @param hre HardhatRuntimeEnvironment object.
-*/
+ */
 
 export const devAddress = "0xE11Cd5244DE68D90755a1d142Ab446A4D17cDC10"; // dreadgang.eth
 export const councilAddress = "0x167e7497191346211dBC6e9f64c9A736eC84C689"; // Multisig on base
