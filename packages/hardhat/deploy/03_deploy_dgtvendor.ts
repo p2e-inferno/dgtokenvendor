@@ -23,7 +23,7 @@ const deployDGToken: DeployFunction = async function (hre: HardhatRuntimeEnviron
     "0x37cb4167d9d9fd5748d202da119d5e9a7d31b8d5", // DGToken Vendor Sponsor
     "0x31152a3ead4f60ce3caeadfccc627360872e3a6a", // DGToken Vendor Supporter
     "0xfd37cf2317fa16db3aafea226d20295bfbf8da98", // DG Nation Tourist
-    "0xe34900ace360310ce4e12a5a6ad586dee445c703" // DGToken CEx
+    "0xe34900ace360310ce4e12a5a6ad586dee445c703", // DGToken CEx
   ];
 
   await deploy("DGTokenVendor", {
