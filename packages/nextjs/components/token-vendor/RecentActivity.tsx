@@ -82,17 +82,17 @@ export const RecentActivity = ({ userAddress, dgTokenSymbol, periodDays = 30 }: 
     const processEvents = () => {
       const newProcessedEvents: ProcessedEvent[] = [];
 
-      const getEventArray = (data: any, name: string): any[] => {
+      const getEventArray = (data: any): any[] => {
         if (Array.isArray(data)) {
           return data;
         }
         return [];
       };
 
-      const flatLitEvents = getEventArray(litEventsData, "LitEvents");
-      const flatStageUpgradedEvents = getEventArray(stageUpgradedEventsData, "StageUpgradedEvents");
-      const flatTokensPurchasedEvents = getEventArray(tokensPurchasedEventsData, "TokensPurchasedEvents");
-      const flatTokensSoldEvents = getEventArray(tokensSoldEventsData, "TokensSoldEvents");
+      const flatLitEvents = getEventArray(litEventsData);
+      const flatStageUpgradedEvents = getEventArray(stageUpgradedEventsData);
+      const flatTokensPurchasedEvents = getEventArray(tokensPurchasedEventsData);
+      const flatTokensSoldEvents = getEventArray(tokensSoldEventsData);
 
       flatLitEvents.forEach((eventLog: any) => {
         const { args, blockHash, transactionHash, logIndex } = eventLog;
