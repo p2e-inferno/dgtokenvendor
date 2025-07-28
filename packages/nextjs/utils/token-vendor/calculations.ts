@@ -1,4 +1,4 @@
-import { TokenAction } from "~~/hooks/useTokenTransaction";
+import { TokenAction } from "~~/types/dgtoken-vendor";
 
 /**
  * Calculates the expected token amount after applying fees
