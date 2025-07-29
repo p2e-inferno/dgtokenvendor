@@ -24,20 +24,19 @@ const nextConfig = {
   },
   transpilePackages: ["@coinbase/onchainkit"],
   experimental: {
-    optimizePackageImports: ["@coinbase/onchainkit"],
-    esmExternals: "loose",
+    // Removed optimizePackageImports to avoid conflicts
+    // esmExternals: "loose", // Removed to avoid Railway cache issues
   },
   webpack: (config, { dev, isServer }) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push("pino-pretty", "lokijs", "encoding");
     
-    // For onchainkit CSS handling
-    if (!dev && !isServer) {
-      config.optimization.splitChunks.cacheGroups.onchainkit = {
-        name: 'onchainkit',
-        test: /[\\/]node_modules[\\/]@coinbase[\\/]onchainkit[\\/]/,
-        chunks: 'all',
-        priority: 10,
+    // Improve caching for Railway environment
+    if (!dev) {
+      config.cache = {
+        type: 'filesystem',
+        allowCollectingMemory: true,
+        maxMemoryGenerations: 1,
       };
     }
     
