@@ -22,9 +22,25 @@ const nextConfig = {
       },
     ],
   },
-  webpack: config => {
+  transpilePackages: ["@coinbase/onchainkit"],
+  experimental: {
+    optimizePackageImports: ["@coinbase/onchainkit"],
+    esmExternals: "loose",
+  },
+  webpack: (config, { dev, isServer }) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push("pino-pretty", "lokijs", "encoding");
+    
+    // For onchainkit CSS handling
+    if (!dev && !isServer) {
+      config.optimization.splitChunks.cacheGroups.onchainkit = {
+        name: 'onchainkit',
+        test: /[\\/]node_modules[\\/]@coinbase[\\/]onchainkit[\\/]/,
+        chunks: 'all',
+        priority: 10,
+      };
+    }
+    
     return config;
   },
 };
