@@ -22,21 +22,54 @@ const nextConfig = {
       },
     ],
   },
-  transpilePackages: ["@coinbase/onchainkit"],
-  experimental: {
-    // Removed optimizePackageImports to avoid conflicts
-    // esmExternals: "loose", // Removed to avoid Railway cache issues
+  transpilePackages: ["@coinbase/onchainkit", "@rainbow-me/rainbowkit"],
+  
+  // Add headers for proper CSS serving
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+      {
+        source: '/static/(.*).css',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/css; charset=utf-8',
+          },
+        ],
+      },
+    ];
   },
+  
+  experimental: {
+    // Force CSS to be processed correctly
+    forceSwcTransforms: true,
+  },
+  
   webpack: (config, { dev, isServer }) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push("pino-pretty", "lokijs", "encoding");
     
-    // Improve caching for Railway environment
+    // Ensure CSS is processed correctly in production
     if (!dev) {
-      config.cache = {
-        type: 'filesystem',
-        allowCollectingMemory: true,
-        maxMemoryGenerations: 1,
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks.cacheGroups,
+          styles: {
+            name: 'styles',
+            test: /\.css$/,
+            chunks: 'all',
+            enforce: true,
+          },
+        },
       };
     }
     

@@ -1,0 +1,249 @@
+/* OnchainKit Font Imports - separated for better parsing */
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz@0,9..40;1,9..40&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,700;1,9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&display=swap');
+
+/* OnchainKit CSS Variables and Styles */
+/* Font */
+.ock-font-family {
+  font-family: var(--ock-font-family);
+}
+
+.ock-font-family-roboto-mono {
+  font-family: "Roboto Mono", monospace;
+}
+
+.ock-text-foreground {
+  color: var(--ock-text-foreground);
+}
+
+.ock-text-foreground-muted {
+  color: var(--ock-text-foreground-muted);
+}
+
+.ock-text-inverse {
+  color: var(--ock-text-inverse);
+}
+
+.ock-text-error {
+  color: var(--ock-text-error);
+}
+
+.ock-text-primary {
+  color: var(--ock-text-primary);
+}
+
+.ock-text-success {
+  color: var(--ock-text-success);
+}
+
+.ock-text-warning {
+  color: var(--ock-text-warning);
+}
+
+/* Background */
+.ock-bg-default {
+  background-color: var(--ock-bg-default);
+}
+
+.ock-bg-default-hover {
+  background-color: var(--ock-bg-default-hover);
+}
+
+.ock-bg-default-active {
+  background-color: var(--ock-bg-default-active);
+}
+
+.ock-bg-alternate {
+  background-color: var(--ock-bg-alternate);
+}
+
+.ock-bg-alternate-hover {
+  background-color: var(--ock-bg-alternate-hover);
+}
+
+.ock-bg-alternate-active {
+  background-color: var(--ock-bg-alternate-active);
+}
+
+.ock-bg-inverse {
+  background-color: var(--ock-bg-inverse);
+}
+
+.ock-bg-inverse-hover {
+  background-color: var(--ock-bg-inverse-hover);
+}
+
+.ock-bg-inverse-active {
+  background-color: var(--ock-bg-inverse-active);
+}
+
+.ock-bg-primary {
+  background-color: var(--ock-bg-primary);
+}
+
+.ock-bg-primary-hover {
+  background-color: var(--ock-bg-primary-hover);
+}
+
+.ock-bg-primary-active {
+  background-color: var(--ock-bg-primary-active);
+}
+
+.ock-bg-primary-washed {
+  background-color: var(--ock-bg-primary-washed);
+}
+
+.ock-bg-secondary {
+  background-color: var(--ock-bg-secondary);
+}
+
+.ock-bg-secondary-hover {
+  background-color: var(--ock-bg-secondary-hover);
+}
+
+.ock-bg-secondary-active {
+  background-color: var(--ock-bg-secondary-active);
+}
+
+.ock-bg-error {
+  background-color: var(--ock-bg-error);
+}
+
+.ock-bg-warning {
+  background-color: var(--ock-bg-warning);
+}
+
+.ock-bg-success {
+  background-color: var(--ock-bg-success);
+}
+
+/* Border */
+.ock-border-default {
+  border-color: var(--ock-border-default);
+}
+
+.ock-border-default-hover {
+  border-color: var(--ock-border-default-hover);
+}
+
+.ock-border-default-active {
+  border-color: var(--ock-border-default-active);
+}
+
+/* OnchainKit Component Styles */
+.ock {
+  --ock-font-family: "Inter", sans-serif;
+  --ock-font-family-mono: "Roboto Mono", monospace;
+  
+  /* Light theme defaults */
+  --ock-text-foreground: #0a0b0d;
+  --ock-text-foreground-muted: #858c94;
+  --ock-text-inverse: #ffffff;
+  --ock-text-error: #d93036;
+  --ock-text-primary: #0d5fff;
+  --ock-text-success: #027948;
+  --ock-text-warning: #fb9500;
+  
+  --ock-bg-default: #ffffff;
+  --ock-bg-default-hover: #f4f4f4;
+  --ock-bg-default-active: #e7e7e7;
+  --ock-bg-alternate: #f8f9fa;
+  --ock-bg-alternate-hover: #eff1f3;
+  --ock-bg-alternate-active: #e6e8ea;
+  --ock-bg-inverse: #0a0b0d;
+  --ock-bg-inverse-hover: #1e2124;
+  --ock-bg-inverse-active: #33373b;
+  --ock-bg-primary: #0d5fff;
+  --ock-bg-primary-hover: #0b4fd6;
+  --ock-bg-primary-active: #093fad;
+  --ock-bg-primary-washed: #e7f0ff;
+  --ock-bg-secondary: #858c94;
+  --ock-bg-secondary-hover: #737a81;
+  --ock-bg-secondary-active: #61686e;
+  --ock-bg-error: #fee7e8;
+  --ock-bg-warning: #fff5e0;
+  --ock-bg-success: #e5f5ed;
+  
+  --ock-border-default: #d4d9e0;
+  --ock-border-default-hover: #c1c8d1;
+  --ock-border-default-active: #aeb7c2;
+}
+
+/* Dark theme */
+.ock[data-theme="dark"] {
+  --ock-text-foreground: #ffffff;
+  --ock-text-foreground-muted: #b8bcc8;
+  --ock-text-inverse: #0a0b0d;
+  --ock-text-error: #ff6b70;
+  --ock-text-primary: #5c9fff;
+  --ock-text-success: #5fb884;
+  --ock-text-warning: #ffb84d;
+  
+  --ock-bg-default: #0a0b0d;
+  --ock-bg-default-hover: #1e2124;
+  --ock-bg-default-active: #33373b;
+  --ock-bg-alternate: #141618;
+  --ock-bg-alternate-hover: #282c30;
+  --ock-bg-alternate-active: #3c4248;
+  --ock-bg-inverse: #ffffff;
+  --ock-bg-inverse-hover: #f4f4f4;
+  --ock-bg-inverse-active: #e7e7e7;
+  --ock-bg-primary: #5c9fff;
+  --ock-bg-primary-hover: #4285e6;
+  --ock-bg-primary-active: #2b6bcc;
+  --ock-bg-primary-washed: #1a2332;
+  --ock-bg-secondary: #b8bcc8;
+  --ock-bg-secondary-hover: #a6aab6;
+  --ock-bg-secondary-active: #9498a4;
+  --ock-bg-error: #2d1617;
+  --ock-bg-warning: #322518;
+  --ock-bg-success: #1a2d23;
+  
+  --ock-border-default: #3c4248;
+  --ock-border-default-hover: #505660;
+  --ock-border-default-active: #656b78;
+}
+
+/* Basic component styles */
+.ock-avatar {
+  display: inline-block;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.ock-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  font-family: var(--ock-font-family);
+}
+
+.ock-card {
+  background-color: var(--ock-bg-default);
+  border: 1px solid var(--ock-border-default);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.ock-input {
+  background-color: var(--ock-bg-default);
+  border: 1px solid var(--ock-border-default);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--ock-text-foreground);
+  font-family: var(--ock-font-family);
+}
+
+.ock-input:focus {
+  outline: none;
+  border-color: var(--ock-bg-primary);
+}
