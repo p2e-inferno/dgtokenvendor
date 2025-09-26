@@ -102,3 +102,53 @@ These are the top-level variables where the contract's state is stored.
 -   `whitelistedCollections` (address[]): A dynamic array storing the addresses of the whitelisted NFT collections.
 -   `userStates` (mapping(address => UserState)): A mapping that links a user's wallet address to their individual `UserState` struct.
 -   `stageConfig` (mapping(UserStage => StageConfig)): A mapping that links each `UserStage` enum to its specific `StageConfig` struct.
+
+## 4. Default Initial Configuration
+
+These are the default values set in the `_initialize` function upon contract deployment.
+
+### `FeeConfig` Defaults
+-   `maxFeeBps`: **1000** (10%)
+-   `minFeeBps`: **10** (0.1%)
+-   `buyFeeBps`: **100** (1%)
+-   `sellFeeBps`: **200** (2%)
+-   `rateChangeCooldown`: **90 days**
+-   `appChangeCooldown`: **120 days**
+
+### `StageConstants` Defaults
+-   `maxSellCooldown`: **45 days**
+-   `dailyWindow`: **24 hours**
+-   `minBuyAmount`: **1,000 tokens** (1000e18)
+-   `minSellAmount`: **5,000 tokens** (5000e18)
+
+### `StageConfig` Defaults
+
+#### `PLEB` (Stage 0)
+-   `burnAmount`: **10 tokens** (10e18)
+-   `upgradePointsThreshold`: 0 (Not applicable)
+-   `upgradeFuelThreshold`: 0 (Not applicable)
+-   `fuelRate`: **1**
+-   `pointsAwarded`: **1**
+-   `qualifyingBuyThreshold`: **1,000 tokens** (1000e18)
+-   `maxSellBps`: **5000** (50%)
+-   `dailyLimitMultiplier`: **100**
+
+#### `HUSTLER` (Stage 1)
+-   `burnAmount`: **100 tokens** (100e18)
+-   `upgradePointsThreshold`: **50**
+-   `upgradeFuelThreshold`: **10**
+-   `fuelRate`: **2**
+-   `pointsAwarded`: **2**
+-   `qualifyingBuyThreshold`: **5,000 tokens** (5000e18)
+-   `maxSellBps`: **6000** (60%)
+-   `dailyLimitMultiplier`: **100**
+
+#### `OG` (Stage 2)
+-   `burnAmount`: **500 tokens** (500e18)
+-   `upgradePointsThreshold`: **500**
+-   `upgradeFuelThreshold`: **100**
+-   `fuelRate`: **5**
+-   `pointsAwarded`: **5**
+-   `qualifyingBuyThreshold`: **20,000 tokens** (20000e18)
+-   `maxSellBps`: **7000** (70%)
+-   `dailyLimitMultiplier`: **100**
