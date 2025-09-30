@@ -8,7 +8,19 @@ This document provides a complete and detailed overview of the `DGTokenVendor` s
 
 ## 1. Primary Purpose
 
-The `DGTokenVendor` smart contract is a decentralized application that facilitates the exchange of a "base" token for a "swap" token. It is designed as a comprehensive ecosystem with features that go beyond simple token swapping, creating a gamified experience for users. The core functionality is to allow users to buy and sell the swap token, but access and capabilities within the system are tied to holding a specific NFT and progressing through a tiered "stage" system.
+DG Token Vendor is a decentralized application that provides a systematic framework for fostering community engagement and rewarding user participation in Web3. It 
+addresses the challenge of low retention and intimidating onboarding by transforming community involvement into a structured, gamified experience.
+
+At its core, DG Token Vendor is an exclusive, NFT-gated token exchange. To interact with its primary functions—buying and selling of a "base" token for a "swap" token. A user 
+must first hold a valid NFT from a whitelisted collection. This mechanism creates a clear entry point and pathway for progression.
+
+Once inside the ecosystem, the application incentivizes long-term participation through a multi-tiered progression system. A user begins at the 'Pleb' stage and 
+can strategically advance to 'Hustler' and 'OG' status by accumulating points and 'fuel' through defined actions, such as making qualifying token purchases. Each 
+stage unlocks progressively better rewards and privileges, such as more favorable transaction terms or higher limits.
+
+By replacing arbitrary reward methods with a transparent, rule-based journey, DG Token Vendor provides a predictable and scalable tool for building and sustaining 
+a loyal, active, and deeply engaged community.
+
 
 ## 2. Core Concepts
 
@@ -264,7 +276,41 @@ This is a standard modifier from OpenZeppelin's `Ownable` contract. It restricts
     -   `setStageConfig(UserStage _stage, StageConfig calldata _config)`
     -   `setCooldownConfig(uint256 _rateChangeCooldown, uint256 _appChangeCooldown)`
 
-## 3. Other Important Modifiers
+## 3. Whitelisted NFT Collections
+
+To use the core functions of the DGTokenVendor, users must hold a valid NFT from one of the following whitelisted collections. Each collection has different purposes and durations.
+
+-   **P2E INFERNO IGNITION**
+    -   **Description:** Awarded for successfully completing the Infernal Sparks Bootcamp — A 4-week onboarding journey into the P2E Inferno ecosystem.
+    -   **Duration:** 30 Days
+    -   **How to Obtain:** This NFT cannot be purchased. It is awarded to participants who complete all milestones in the Infernal Sparks Bootcamp.
+
+-   **DG Nation**
+    -   **Description:** The beating heart and flickering flame that keeps the engine of the DGToken Vendor running.
+    -   **Duration:** 30 Days
+    -   **How to Obtain:** DG Nation NFT is a monthly subscription that can be purchased for 10000 DGT.
+
+-   **DGToken Vendor Sponsor**
+    -   **Description:** A soulbound (non-transferable) NFT for sponsors who want a front-row seat at the foundation of the DGToken Vendor.
+    -   **Duration:** 60 Days
+    -   **How to Obtain:** Can be purchased for 20000 UP.
+
+-   **DGToken Vendor Supporter**
+    -   **Description:** Show your support for our Digital Game ecosystem with this NFT collection. Holders get exclusive benefits and early access to features.
+    -   **Duration:** 180 Days
+    -   **How to Obtain:** Can be purchased for 500 USDC.
+
+-   **DG Nation Tourist**
+    -   **Description:** An access pass for short-term visitors of DG Nation looking to explore and experience the frontiers.
+    -   **Duration:** 1 Day
+    -   **How to Obtain:** Can be purchased for 0.005 ETH.
+
+-   **DGToken CEx**
+    -   **Description:** Designed for long-term players who want to participate as Point Of Sale vendors exchanging DGTokens for fiat.
+    -   **Duration:** 365 Days
+    -   **How to Obtain:** Can be purchased for 100000 UP.
+
+## 4. Other Important Modifiers
 
 These modifiers are not for access control but are critical for contract safety and state management.
 
